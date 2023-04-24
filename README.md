@@ -3,6 +3,12 @@
 ## What is this about?
 StarCoder💫 is a language model trained on source code and natural language text. Its training data incorporates more that 80 different programming languages as well as text extracted from github issues and commits and from notebooks.
 
+## Installation
+To install the dependencies simply run the following command:
+```bash
+pip install -r requirements.txt
+```
+
 ## Fine-Tuning
 As a decoder model, StarCoder can be fine-tuned to achieve multiple downstream tasks. Our interest in this part is to fine-tune StarCoder in order to make it follow instructions. [Instruction fine-tuning](https://arxiv.org/pdf/2109.01652.pdf) has gained a lot of attention recently as it proposed a simple framework that teach language models to align with human needs. That procedure requires the availability of instruction datasets, which contain `instruction - answer` pairs. Unfortunately such datasets are not ubiquitous but thanks to Hugging Face 🤗's [datasets](https://github.com/huggingface/datasets) library we can have access to some good proxies.
 
@@ -11,12 +17,34 @@ As a decoder model, StarCoder can be fine-tuned to achieve multiple downstream t
 
 To execute the fine-tuning script run the following command:
 ```bash
-python finetune/alpaca.py
+python finetune/alpaca.py \
+  --model_path="bigcode/large-model"\
+  --dataset_name="HuggingFaceH4/CodeAlpaca_20K"\
+  --streaming=False\
+  --seq_length 2048\
+  --max_steps 1000\
+  --batch_size 1\
+  --gradient_accumulation_steps 16\
+  --learning_rate 5e-6\
+  --lr_scheduler_type="cosine"\
+  --num_warmup_steps 100\
+  --weight_decay 0.05\
 ```
 ### Stack Exchange
-[Stack Exchange](https://en.wikipedia.org/wiki/Stack_Exchange) is a well-known network of Q&A websites on topics in diverse fields. It is a place where a user can ask a question and obtain answers. Those answers are scored and ranked depending based on their quality. [Stack exchange instruction](https://huggingface.co/datasets/ArmelR/stack-exchange-instruction) is a dataset that was obtained by scrapping the site in order to build a collection of Q&A pairs. A language model can then be fine-tuned on that dataset to make it elicit question answering.
+[Stack Exchange](https://en.wikipedia.org/wiki/Stack_Exchange) is a well-known network of Q&A websites on topics in diverse fields. It is a place where a user can ask a question and obtain answers from other users. Those answers are scored and ranked based on their quality. [Stack exchange instruction](https://huggingface.co/datasets/ArmelR/stack-exchange-instruction) is a dataset that was obtained by scrapping the site in order to build a collection of Q&A pairs. A language model can then be fine-tuned on that dataset to make it elicit strong and diverse question-answering skills.
 
 To execute the fine-tuning script run the following command:
 ```bash
-python finetune/alpaca.py
+python finetune/SE.py
+  --model_path="bigcode/large-model"\
+  --dataset_name="ArmelR/stack-exchange-instruction"\
+  --streaming=False\
+  --seq_length 2048\
+  --max_steps 1000\
+  --batch_size 1\
+  --gradient_accumulation_steps 16\
+  --learning_rate 5e-6\
+  --lr_scheduler_type="cosine"\
+  --num_warmup_steps 100\
+  --weight_decay 0.05\
 ```
