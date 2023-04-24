@@ -1,3 +1,3 @@
-# 💫 starcoder
+# 💫 StarCoder
 
 ## What is this about?
