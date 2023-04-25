@@ -100,8 +100,16 @@ python -m torch.distributed.launch \
   --weight_decay 0.05\
   --output_dir="./checkpoints"
 ```
+### Merging PEFT adapter layers
+If you train a model with PEFT, you'll need to merge the adapter layers with the base model if you want to run inference / evaluation. To do so, run:
+```bash
+python scripts/training/merge_peft_adapters.py --model_name_or_path model_to_merge
 
-## Example outputs
+# Push merged model to the Hub
+python scripts/training/merge_peft_adapters.py --model_name_or_path model_to_merge --push_to_hub
+
+
+### Example outputs
 
 **Instruction**:
 
