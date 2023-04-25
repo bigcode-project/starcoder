@@ -43,7 +43,7 @@ The size of the model makes the fine-tuning intractable in an environment withou
 
 ```bash
 python -m torch.distributed.launch \
- --nproc_per_node number_of_gpus finetune/alpaca.py
+ --nproc_per_node number_of_gpus finetune/finetune.py
   --model_path="bigcode/large-model"\
   --dataset_name="HuggingFaceH4/CodeAlpaca_20K"\
   --streaming=False\
@@ -68,7 +68,28 @@ python finetune/SE.py
   --subset="data/finetune"\
   --split="train"\
   --size_valid_set 10000\
-  --streaming \
+  --streaming True\
+  --seq_length 2048\
+  --max_steps 1000\
+  --batch_size 1\
+  --gradient_accumulation_steps 16\
+  --learning_rate 1e-4\
+  --lr_scheduler_type="cosine"\
+  --num_warmup_steps 100\
+  --weight_decay 0.05\
+  --output_dir="./checkpoints"
+```
+The command is quite similar to the what we use on alpaca code. However, the size of the SE dataset is better manageable when using streaming. We also have to precise the split of the dataset that is used. For more details, check the [dataset's page](https://huggingface.co/datasets/ArmelR/stack-exchange-instruction) on 🤗. Similarly we can modify the command to account for the availability of GPUs
+
+```bash
+python -m torch.distributed.launch \
+  --nproc_per_node number_of_gpus finetune/finetune.py
+  --model_path="bigcode/large-model"\
+  --dataset_name="ArmelR/stack-exchange-instruction"\
+  --subset="data/finetune"\
+  --split="train"\
+  --size_valid_set 10000\
+  --streaming True\
   --seq_length 2048\
   --max_steps 1000\
   --batch_size 1\
