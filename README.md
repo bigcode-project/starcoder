@@ -25,7 +25,7 @@ huggingface-cli login
 
 To execute the fine-tuning script run the following command:
 ```bash
-python finetune/alpaca.py \
+python finetune/finetune.py \
   --model_path="bigcode/large-model"\
   --dataset_name="HuggingFaceH4/CodeAlpaca_20K"\
   --streaming=False\
@@ -62,7 +62,7 @@ python -m torch.distributed.launch \
 
 To execute the fine-tuning script run the following command:
 ```bash
-python finetune/SE.py
+python finetune/finetune.py
   --model_path="bigcode/large-model"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
