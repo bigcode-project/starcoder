@@ -62,7 +62,7 @@ python -m torch.distributed.launch \
 
 To execute the fine-tuning script run the following command:
 ```bash
-python finetune/finetune.py
+python finetune/finetune.py \
   --model_path="bigcode/large-model"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
@@ -107,11 +107,11 @@ python scripts/training/merge_peft_adapters.py --model_name_or_path model_to_mer
 
 # Push merged model to the Hub
 python scripts/training/merge_peft_adapters.py --model_name_or_path model_to_merge --push_to_hub
-
+```
 
 ### Example outputs
 
-**Instruction**:
+**Instruction**: Write a function to output the harmonic mean of a list of elements. Make sure to check if the list is empty and ignore the elements that are equal to 0.
 
 **StarCoder's answer**:
 
