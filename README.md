@@ -39,7 +39,7 @@ python finetune/finetune.py \
   --weight_decay 0.05\
   --output_dir="./checkpoints"
 ```
-The size of the model makes the fine-tuning intractable in an environment without GPUs. The problem remains even with the use of PEFT. To launch the training on multiple GPUs use the following command (we just add python -m torch.distributed.launch --nproc_per_node number_of_gpus):
+The size of the model makes the fine-tuning intractable in an environment without GPUs. The problem remains even with the use of PEFT. To launch the training on multiple GPUs use the following command (we just add ```python -m torch.distributed.launch --nproc_per_node number_of_gpus```):
 
 ```bash
 python -m torch.distributed.launch \
