@@ -146,7 +146,7 @@ The purpose of the code is to convert a given number n to a string of its base 3
 ```
 
 **Instruction**:
-Translate this function is Java :
+Translate this function in Java :
 
 ```python
 def function(a, b, c):
