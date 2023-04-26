@@ -130,7 +130,7 @@ def geometric_mean(nums):
 ```
 
 **Instruction**:
-what is the purpose of the following code?
+What is the purpose of the following code?
 ```python
 def function(n):
     s = ""
