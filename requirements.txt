@@ -1,0 +1,9 @@
+tqdm==4.65.0
+transformers==4.28.1
+datasets==2.11.0
+wandb==0.15.0
+torch==1.13.1
+huggingface-hub==0.13.4
+accelerate==0.18.0
+git+https://github.com/huggingface/peft.git 
+git+https://github.com/timdettmers/bitsandbytes.git
