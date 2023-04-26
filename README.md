@@ -49,7 +49,10 @@ Before you run any of the scripts make sure you are logged in and can push to th
 ```bash
 huggingface-cli login
 ```
-Make sure you are logged in on wandb.
+Make sure you are logged in on wandb:
+```bash
+wandb login
+```
 
 ## Fine-Tuning (`finetune.py`)
 💫 StarCoder can be fine-tuned to achieve multiple downstream tasks. Our interest here is to fine-tune StarCoder in order to make it follow instructions. [Instruction fine-tuning](https://arxiv.org/pdf/2109.01652.pdf) has gained a lot of attention recently as it proposes a simple framework that teaches language models to align their outputs with human needs. That procedure requires the availability of quality instruction datasets, which contain multiple `instruction - answer` pairs. Unfortunately such datasets are not ubiquitous but thanks to Hugging Face 🤗's [datasets](https://github.com/huggingface/datasets) library we can have access to some good proxies. To fine-tune cheaply and efficiently, we use Hugging Face 🤗's [PEFT](https://github.com/huggingface/peft) as well as Tim Dettmers' bitsandbytes.
@@ -64,11 +67,11 @@ python finetune/finetune.py \
   --dataset_name="HuggingFaceH4/CodeAlpaca_20K"\
   --streaming=False\
   --seq_length 2048\
-  --max_steps 1000\
+  --max_steps 2000\
   --batch_size 1\
   --gradient_accumulation_steps 16\
   --learning_rate 5e-6\
-  --lr_scheduler_type="cosine"\
+  --lr_scheduler_type="linear"\
   --num_warmup_steps 100\
   --weight_decay 0.05\
   --output_dir="./checkpoints"
@@ -82,11 +85,11 @@ python -m torch.distributed.launch \
   --dataset_name="HuggingFaceH4/CodeAlpaca_20K"\
   --streaming=False\
   --seq_length 2048\
-  --max_steps 1000\
+  --max_steps 2000\
   --batch_size 1\
   --gradient_accumulation_steps 16\
   --learning_rate 5e-6\
-  --lr_scheduler_type="cosine"\
+  --lr_scheduler_type="linear"\
   --num_warmup_steps 100\
   --weight_decay 0.05\
   --output_dir="./checkpoints"
