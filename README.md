@@ -43,7 +43,7 @@ The size of the model makes the fine-tuning intractable in an environment withou
 
 ```bash
 python -m torch.distributed.launch \
- --nproc_per_node number_of_gpus finetune/finetune.py
+  --nproc_per_node number_of_gpus finetune/finetune.py
   --model_path="bigcode/large-model"\
   --dataset_name="HuggingFaceH4/CodeAlpaca_20K"\
   --streaming=False\
@@ -103,10 +103,15 @@ python -m torch.distributed.launch \
 ### Merging PEFT adapter layers
 If you train a model with PEFT, you'll need to merge the adapter layers with the base model if you want to run inference / evaluation. To do so, run:
 ```bash
-python scripts/training/merge_peft_adapters.py --model_name_or_path model_to_merge
+python finetune/merge_peft_adapters.py --model_name_or_path model_to_merge --peft_model_path model_checkpoint
 
 # Push merged model to the Hub
-python scripts/training/merge_peft_adapters.py --model_name_or_path model_to_merge --push_to_hub
+python finetune/merge_peft_adapters.py --model_name_or_path model_to_merge --peft_model_path model_checkpoint --push_to_hub
+```
+For example
+
+```bash
+python finetune/merge_peft_adapters.py --model_name_or_path bigcode/large-model --peft_model_path checkpoints/checkpoint-1000 --push_to_hub
 ```
 
 ### Example outputs
