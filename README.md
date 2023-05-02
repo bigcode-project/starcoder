@@ -14,28 +14,25 @@ Install the `pytorch` version compatible with your version of cuda [here](https:
 ```bash
 conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.6 -c pytorch -c nvidia
 ```
+Install `transformers` and `peft`
+```bash
+conda install -c huggingface transformers 
+pip install  git+https://github.com/huggingface/peft.git
+```
+Note that you can install the latest stable version of transformers by using
+
+```bash
+pip install git+https://github.com/huggingface/transformers
+```
+
 Install `datasets`, `accelerate` and `huggingface_hub`
 
 ```bash
-conda install -c huggingface conda-forge datasets
+conda install -c huggingface -c conda-forge datasets
 conda install -c conda-forge accelerate
 conda install -c conda-forge huggingface_hub
 ```
 
-Install the latest version of `transformers` by cloning the repository
-
-```bash
-git clone https://github.com/huggingface/transformers
-cd transformers 
-pip install -e .
-```
-Install the latest version of `peft` by cloning the repository
-
-```bash
-git clone https://github.com/huggingface/peft
-cd peft 
-pip install -e .
-```
 Finally, install `bitsandbytes` and `wandb`
 ```bash
 pip install bitsandbytes
@@ -66,7 +63,6 @@ To execute the fine-tuning script run the following command:
 python finetune/finetune.py \
   --model_path="bigcode/large-model"\
   --dataset_name="HuggingFaceH4/CodeAlpaca_20K"\
-  --streaming=False\
   --seq_length 2048\
   --max_steps 2000\
   --batch_size 1\
@@ -84,7 +80,6 @@ python -m torch.distributed.launch \
   --nproc_per_node number_of_gpus finetune/finetune.py \
   --model_path="bigcode/large-model"\
   --dataset_name="HuggingFaceH4/CodeAlpaca_20K"\
-  --streaming=False\
   --seq_length 2048\
   --max_steps 2000\
   --batch_size 1\
@@ -100,13 +95,13 @@ python -m torch.distributed.launch \
 
 To execute the fine-tuning script run the following command:
 ```bash
-python finetune/finetune.py \
+python finetune/finetune_SE.py \
   --model_path="bigcode/large-model"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
   --split="train"\
   --size_valid_set 10000\
-  --streaming True\
+  --streaming\
   --seq_length 2048\
   --max_steps 1000\
   --batch_size 1\
@@ -121,13 +116,13 @@ The command is quite similar to the what we use on alpaca code. However, the siz
 
 ```bash
 python -m torch.distributed.launch \
-  --nproc_per_node number_of_gpus finetune/finetune.py \
+  --nproc_per_node number_of_gpus finetune/finetune_SE.py \
   --model_path="bigcode/large-model"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
   --split="train"\
   --size_valid_set 10000\
-  --streaming True\
+  --streaming \
   --seq_length 2048\
   --max_steps 1000\
   --batch_size 1\
