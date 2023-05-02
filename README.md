@@ -66,6 +66,8 @@ python finetune/finetune.py \
   --seq_length 2048\
   --max_steps 2000\
   --batch_size 1\
+  --input_column_name="prompt"\
+  --output_column_name="completion"\ 
   --gradient_accumulation_steps 16\
   --learning_rate 5e-6\
   --lr_scheduler_type="linear"\
@@ -83,6 +85,8 @@ python -m torch.distributed.launch \
   --seq_length 2048\
   --max_steps 2000\
   --batch_size 1\
+  --input_column_name="prompt"\
+  --output_column_name="completion"\ 
   --gradient_accumulation_steps 16\
   --learning_rate 5e-6\
   --lr_scheduler_type="linear"\
@@ -105,6 +109,8 @@ python finetune/finetune_SE.py \
   --seq_length 2048\
   --max_steps 1000\
   --batch_size 1\
+  --input_column_name="question"\
+  --output_column_name="response"\ 
   --gradient_accumulation_steps 16\
   --learning_rate 1e-4\
   --lr_scheduler_type="cosine"\
@@ -126,6 +132,8 @@ python -m torch.distributed.launch \
   --seq_length 2048\
   --max_steps 1000\
   --batch_size 1\
+  --input_column_name="question"\
+  --output_column_name="response"\ 
   --gradient_accumulation_steps 16\
   --learning_rate 1e-4\
   --lr_scheduler_type="cosine"\
