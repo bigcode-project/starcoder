@@ -10,11 +10,11 @@ Create a new conda environment and activate it
 conda create -n env
 conda activate env
 ```
-Find the pytorch version compatible with your version of cuda [here](https://pytorch.org/get-started/previous-versions/), for example the following command work with cuda 11.6
+Install the `pytorch` version compatible with your version of cuda [here](https://pytorch.org/get-started/previous-versions/), for example the following command works with cuda 11.6
 ```bash
 conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.6 -c pytorch -c nvidia
 ```
-Install datasets, accelerate and huggingface_hub
+Install `datasets`, `accelerate` and `huggingface_hub`
 
 ```bash
 conda install -c huggingface conda-forge datasets
@@ -22,21 +22,21 @@ conda install -c conda-forge accelerate
 conda install -c conda-forge huggingface_hub
 ```
 
-Install the latest version of transformers by cloning the repository
+Install the latest version of `transformers` by cloning the repository
 
 ```bash
 git clone https://github.com/huggingface/transformers
 cd transformers 
 pip install -e .
 ```
-Install the latest version of peft by cloning the repository
+Install the latest version of `peft` by cloning the repository
 
 ```bash
 git clone https://github.com/huggingface/peft
 cd peft 
 pip install -e .
 ```
-Finally, install bitsandbytes and wandb
+Finally, install `bitsandbytes` and `wandb`
 ```bash
 pip install bitsandbytes
 pip install wandb
@@ -49,10 +49,11 @@ Before you run any of the scripts make sure you are logged in and can push to th
 ```bash
 huggingface-cli login
 ```
-Make sure you are logged in wandb:
+Make sure you are logged in `wandb`:
 ```bash
 wandb login
 ```
+Now that everything is done, you can clone the repository and get into the corresponding directory.
 
 ## Fine-Tuning (`finetune.py`)
 💫 StarCoder can be fine-tuned to achieve multiple downstream tasks. Our interest here is to fine-tune StarCoder in order to make it follow instructions. [Instruction fine-tuning](https://arxiv.org/pdf/2109.01652.pdf) has gained a lot of attention recently as it proposes a simple framework that teaches language models to align their outputs with human needs. That procedure requires the availability of quality instruction datasets, which contain multiple `instruction - answer` pairs. Unfortunately such datasets are not ubiquitous but thanks to Hugging Face 🤗's [datasets](https://github.com/huggingface/datasets) library we can have access to some good proxies. To fine-tune cheaply and efficiently, we use Hugging Face 🤗's [PEFT](https://github.com/huggingface/peft) as well as Tim Dettmers' [bitsandbytes](https://github.com/TimDettmers/bitsandbytes).
