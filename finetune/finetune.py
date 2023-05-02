@@ -58,6 +58,9 @@ def get_args():
     parser.add_argument("--streaming", action="store_true")
     parser.add_argument("--shuffle_buffer", type=int, default=5000)
 
+    parser.add_argument("--input_column_name", type=str, default="prompt")
+    parser.add_argument("--output_column_name", type=str, default="completion")
+
     parser.add_argument("--seq_length", type=int, default=2048)
     parser.add_argument("--max_steps", type=int, default=10000)
     parser.add_argument("--batch_size", type=int, default=1)
@@ -87,13 +90,13 @@ def get_args():
     return parser.parse_args()
 
 
-def chars_token_ratio(dataset, tokenizer, nb_examples=400):
+def chars_token_ratio(dataset, tokenizer, input_column_name="prompt", output_column_name="completion", nb_examples=400):
     """
     Estimate the average number of characters per token in the dataset.
     """
     total_characters, total_tokens = 0, 0
     for _, example in tqdm(zip(range(nb_examples), iter(dataset)), total=nb_examples):
-        text = prepare_sample_text(example)
+        text = prepare_sample_text(example, input_column_name, output_column_name)
         total_characters += len(text)
         if tokenizer.is_fast:
             total_tokens += len(tokenizer(text).tokens())
@@ -118,9 +121,9 @@ def print_trainable_parameters(model):
     )
 
 
-def prepare_sample_text(example):
+def prepare_sample_text(example, input_column_name="prompt", output_column_name="completion"):
     """Prepare the text from a sample of the dataset."""
-    text = f"Question: {example['prompt']}\n\nAnswer: {example['completion']}"
+    text = f"Question: {example[input_column_name]}\n\nAnswer: {example[output_column_name]}"
     return text
 
 
@@ -144,6 +147,8 @@ class ConstantLengthDataset(IterableDataset):
         seq_length=1024,
         num_of_sequences=1024,
         chars_per_token=3.6,
+        input_column_name="prompt",
+        output_column_name="completion"
     ):
         self.tokenizer = tokenizer
         self.concat_token_id = tokenizer.eos_token_id if tokenizer.eos_token_id is not None else args.eos_token_id
@@ -152,6 +157,8 @@ class ConstantLengthDataset(IterableDataset):
         self.infinite = infinite
         self.current_size = 0
         self.max_buffer_size = seq_length * chars_per_token * num_of_sequences
+        self.input_column_name = input_column_name
+        self.output_column_name = output_column_name
 
     def __iter__(self):
         iterator = iter(self.dataset)
@@ -162,7 +169,7 @@ class ConstantLengthDataset(IterableDataset):
                 if buffer_len >= self.max_buffer_size:
                     break
                 try:
-                    buffer.append(prepare_sample_text(next(iterator)))
+                    buffer.append(prepare_sample_text(next(iterator), self.input_column_name, self.output_column_name))
                     buffer_len += len(buffer[-1])
                 except StopIteration:
                     if self.infinite:
@@ -203,7 +210,7 @@ def create_datasets(tokenizer, args):
         valid_data = dataset["test"]
         print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
 
-    chars_per_token = chars_token_ratio(train_data, tokenizer)
+    chars_per_token = chars_token_ratio(train_data, tokenizer, args.input_column_name, args.output_column_name)
     print(f"The character to token ratio of the dataset is: {chars_per_token:.2f}")
 
     train_dataset = ConstantLengthDataset(
@@ -212,6 +219,8 @@ def create_datasets(tokenizer, args):
         infinite=True,
         seq_length=args.seq_length,
         chars_per_token=chars_per_token,
+        input_column_name=args.input_column_name,
+        output_column_name=args.output_column_name
     )
     valid_dataset = ConstantLengthDataset(
         tokenizer,
@@ -219,6 +228,8 @@ def create_datasets(tokenizer, args):
         infinite=False,
         seq_length=args.seq_length,
         chars_per_token=chars_per_token,
+        input_column_name=args.input_column_name,
+        output_column_name=args.output_column_name
     )
     return train_dataset, valid_dataset
 
