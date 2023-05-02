@@ -99,7 +99,7 @@ python -m torch.distributed.launch \
 
 To execute the fine-tuning script run the following command:
 ```bash
-python finetune/finetune_SE.py \
+python finetune/finetune.py \
   --model_path="bigcode/large-model"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
@@ -122,7 +122,7 @@ The command is quite similar to the what we use on alpaca code. However, the siz
 
 ```bash
 python -m torch.distributed.launch \
-  --nproc_per_node number_of_gpus finetune/finetune_SE.py \
+  --nproc_per_node number_of_gpus finetune/finetune.py \
   --model_path="bigcode/large-model"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
