@@ -172,6 +172,6 @@ python finetune/merge_peft_adapters.py --model_name_or_path model_to_merge --pef
 For example
 
 ```bash
-python finetune/merge_peft_adapters.py --model_name_or_path bigcode/large-model --peft_model_path checkpoints/checkpoint-1000 --push_to_hub
+python finetune/merge_peft_adapters.py --model_name_or_path bigcode/starcoder --peft_model_path checkpoints/checkpoint-1000 --push_to_hub
 ```
 
