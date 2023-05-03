@@ -4,20 +4,21 @@
 💫 StarCoder is a language model (LM) trained on source code and natural language text. Its training data incorporates more that 80 different programming languages as well as text extracted from github issues and commits and from notebooks. This repository showcases how we get an overview of this LM's capabilities.
 
 # Table of Contents
-1. Quickstart
-  - [Installation](#installation)
-  - [Code generation with StarCoder](#code-generation)
+1. [Quickstart](#quickstart)
+    - [Installation](#installation)
+    - [Code generation with StarCoder](#code-generation)
+    - [Text-generation-inference code](#text-generation-inference-code)
 2. [Fine-tuning](#fine-tuning)
-  - [Step by step installation with conda](#step-by-step-installation-with-conda)
-  - [Datasets](#datasets)
-    - [Stack Exchange](#stack-exchange-se)
-  - [Merging PEFT adapter layers](#merging-peft-adapter-layers)
+    - [Step by step installation with conda](#step-by-step-installation-with-conda)
+    - [Datasets](#datasets)
+      - [Stack Exchange](#stack-exchange-se)
+    - [Merging PEFT adapter layers](#merging-peft-adapter-layers)
 
 # Quickstart
-StarCoder was trained on github code, thus is can be use to perform text-generation. That is, completing the implementation of a function or infer the following characters in a line of code. This can be done with the help of the transformers's library.
+StarCoder was trained on github code, thus it can be used to perform code generation. More precisely, the model can complete the implementation of a function or infer the following characters in a line of code. This can be done with the help of the 🤗's [transformers](https://github.com/huggingface/transformers) library.
 
 ## Installation
-Here we have to install all the libraries listed in `requirements.txt`
+First, we have to install all the libraries listed in `requirements.txt`
 ```bash
 pip install -r requirements.txt
 ```
@@ -37,6 +38,24 @@ inputs = tokenizer.encode("def print_hello_world():", return_tensors="pt").to(de
 outputs = model.generate(inputs)
 print(tokenizer.decode(outputs[0]))
 ```
+or
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+model_ckpt = "bigcode/starcoder"
+
+model = AutoModelForCausalLM.from_pretrained(model_ckpt)
+tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
+
+pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
+print( pipe("def hello():") )
+```
+
+## Text-generation-inference Code
+
+```bash
+docker run --gpus '"device:0"' -p 8080:80 -v $PWD/data:/data -e HUGGING_FACE_HUB_TOKEN=<YOUR BIGCODE ENABLED TOKEN> -e HF_HUB_ENABLE_HF_TRANSFER=0 -d  ghcr.io/huggingface/text-generation-inference:sha-880a76e --model-id bigcode/starcoder --max-total-tokens 8192
+```
+For more details, see [here](https://github.com/huggingface/text-generation-inference).
 
 # Fine-tuning
 
