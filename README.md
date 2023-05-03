@@ -4,11 +4,40 @@
 💫 StarCoder is a language model (LM) trained on source code and natural language text. Its training data incorporates more that 80 different programming languages as well as text extracted from github issues and commits and from notebooks. This repository showcases how we get an overview of this LM's capabilities.
 
 # Table of Contents
-1. [Fine-tuning](#fine-tuning)
+1. Quickstart
+  - [Installation](#installation)
+  - [Code generation with StarCoder](#code-generation)
+2. [Fine-tuning](#fine-tuning)
   - [Step by step installation with conda](#step-by-step-installation-with-conda)
   - [Datasets](#datasets)
     - [Stack Exchange](#stack-exchange-se)
   - [Merging PEFT adapter layers](#merging-peft-adapter-layers)
+
+# Quickstart
+StarCoder was trained on github code, thus is can be use to perform text-generation. That is, completing the implementation of a function or infer the following characters in a line of code. This can be done with the help of the transformers's library.
+
+## Installation
+Here we have to install all the libraries listed in `requirements.txt`
+```bash
+pip install -r requirements.txt
+```
+## Code generation
+The code generation pipeline is as follows
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+checkpoint = "bigcode/starcoder"
+device = "cuda" # for GPU usage or "cpu" for CPU usage
+
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+model = AutoModelForCausalLM.from_pretrained(checkpoint, trust_remote_code=True).to(device)
+
+inputs = tokenizer.encode("def print_hello_world():", return_tensors="pt").to(device)
+outputs = model.generate(inputs)
+print(tokenizer.decode(outputs[0]))
+```
+
 # Fine-tuning
 
 Here, we showcase how we can fine-tune this LM on a specific downstream task.
@@ -72,7 +101,7 @@ Now that everything is done, you can clone the repository and get into the corre
 To execute the fine-tuning script run the following command:
 ```bash
 python finetune/finetune.py \
-  --model_path="bigcode/large-model"\
+  --model_path="bigcode/starcoder"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
   --split="train"\
@@ -95,7 +124,7 @@ The command is quite similar to the what we use on alpaca code. However, the siz
 ```bash
 python -m torch.distributed.launch \
   --nproc_per_node number_of_gpus finetune/finetune.py \
-  --model_path="bigcode/large-model"\
+  --model_path="bigcode/starcoder"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
   --split="train"\
@@ -127,19 +156,3 @@ For example
 python finetune/merge_peft_adapters.py --model_name_or_path bigcode/large-model --peft_model_path checkpoints/checkpoint-1000 --push_to_hub
 ```
 
-## How to do text-generation with StarCoder
-
-```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-checkpoint = "bigcode/large-model"
-device = "cuda" # for GPU usage or "cpu" for CPU usage
-
-tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-model = AutoModelForCausalLM.from_pretrained(checkpoint, trust_remote_code=True).to(device)
-
-inputs = tokenizer.encode("def print_hello_world():", return_tensors="pt").to(device)
-outputs = model.generate(inputs)
-print(tokenizer.decode(outputs[0]))
-```
-## Text-inference
