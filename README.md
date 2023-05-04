@@ -7,7 +7,7 @@
 1. [Quickstart](#quickstart)
     - [Installation](#installation)
     - [Code generation with StarCoder](#code-generation)
-    - [Text-generation-inference code](#text-generation-inference-code)
+    - [Text-generation-inference code](#text-generation-inference)
 2. [Fine-tuning](#fine-tuning)
     - [Step by step installation with conda](#step-by-step-installation-with-conda)
     - [Datasets](#datasets)
@@ -50,7 +50,7 @@ pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
 print( pipe("def hello():") )
 ```
 
-## Text-generation-inference Code
+## Text-generation-inference
 
 ```bash
 docker run --gpus '"device:0"' -p 8080:80 -v $PWD/data:/data -e HUGGING_FACE_HUB_TOKEN=<YOUR BIGCODE ENABLED TOKEN> -e HF_HUB_ENABLE_HF_TRANSFER=0 -d  ghcr.io/huggingface/text-generation-inference:sha-880a76e --model-id bigcode/starcoder --max-total-tokens 8192
@@ -75,7 +75,7 @@ conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cud
 Install `transformers` and `peft`
 ```bash
 conda install -c huggingface transformers 
-pip install  git+https://github.com/huggingface/peft.git
+pip install git+https://github.com/huggingface/peft.git
 ```
 Note that you can install the latest stable version of transformers by using
 
