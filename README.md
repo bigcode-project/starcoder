@@ -3,6 +3,10 @@
 # What is this about?
 💫 StarCoder is a language model (LM) trained on source code and natural language text. Its training data incorporates more that 80 different programming languages as well as text extracted from github issues and commits and from notebooks. This repository showcases how we get an overview of this LM's capabilities.
 
+# Disclaimer
+
+Before you can use the model go to `hf.co/bigcode/starcoder` and accept the agreement and then use
+
 # Table of Contents
 1. [Quickstart](#quickstart)
     - [Installation](#installation)
