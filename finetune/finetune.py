@@ -239,7 +239,7 @@ def run_training(args, train_data, val_data):
     # disable caching mechanism when using gradient checkpointing
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        trust_remote_code=True,
+        use_auth_token=True,
         use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,
         device_map={"": Accelerator().process_index},
