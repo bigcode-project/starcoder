@@ -138,7 +138,7 @@ python finetune/finetune.py \
   --weight_decay 0.05\
   --output_dir="./checkpoints" \
 ```
-The command is quite similar to the what we use on alpaca code. However, the size of the SE dataset is better manageable when using streaming. We also have to precise the split of the dataset that is used. For more details, check the [dataset's page](https://huggingface.co/datasets/ArmelR/stack-exchange-instruction) on 🤗. Similarly we can modify the command to account for the availability of GPUs
+The size of the SE dataset is better manageable when using streaming. We also have to precise the split of the dataset that is used. For more details, check the [dataset's page](https://huggingface.co/datasets/ArmelR/stack-exchange-instruction) on 🤗. Similarly we can modify the command to account for the availability of GPUs
 
 ```bash
 python -m torch.distributed.launch \
