@@ -5,7 +5,7 @@
 
 # Disclaimer
 
-Before you can use the model go to `hf.co/bigcode/starcoder` and accept the agreement and then use
+Before you can use the model go to `hf.co/bigcode/starcoder` and accept the agreement.
 
 # Table of Contents
 1. [Quickstart](#quickstart)
