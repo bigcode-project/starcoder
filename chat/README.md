@@ -1,6 +1,6 @@
 # Fine-tuning StarCoder for chat-based applications
 
-This is a fully-working example to fine-tune StarCoder on multi-turn dialogues like those curated from OpenAssistant. 
+This is a fully-working example to fine-tune StarCoder on a corpus of multi-turn dialogues and thus enable a chatty coding assistant. 
 
 ## Getting started
 
@@ -11,7 +11,7 @@ conda create -n starchat python=3.10 && conda activate starchat
 ```
 
 Next, install PyTorch - since this hardware-dependent, we
-direct you to the [PyTorch Installation Page](https://pytorch.org/get-started/locally/) for this step (make sure you install v1.13.1).
+direct you to the [PyTorch Installation Page](https://pytorch.org/get-started/locally/) for this step (make sure you install v1.13.1). Once you've installed it, install the rest of the project dependencies:
 
 ```shell
 pip install -r requirements.txt
