@@ -29,18 +29,16 @@ from itertools import chain
 import datasets
 import torch
 import transformers
-from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, default_data_collator, set_seed
+from config import DataArguments, ModelArguments, TrainingArguments
+from datasets import load_dataset
+from dialogues import get_dialogue_template, mask_user_labels, prepare_dialogue
+from transformers import (AutoModelForCausalLM, AutoTokenizer, Trainer,
+                          default_data_collator, set_seed)
 from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
+from utils import StarChatArgumentParser, hf_login, init_wandb_training
 
 import wandb
-from accelerate import Accelerator
-from dialogues import get_dialogue_template, prepare_dialogue, mask_user_labels
-from config import DataArguments, ModelArguments, TrainingArguments
-from utils import StarChatArgumentParser, hf_login, init_wandb_training
-from peft import LoraConfig, get_peft_model
-from datasets import load_dataset
-
 
 logger = logging.getLogger(__name__)
 
@@ -248,57 +246,13 @@ def main():
     torch_dtype = (
         model_args.torch_dtype if model_args.torch_dtype in ["auto", None] else getattr(torch, model_args.torch_dtype)
     )
-    if model_args.use_peft is True:
-        logger.info("Patching model with PEFT")
-        model = AutoModelForCausalLM.from_pretrained(
-            model_args.model_name_or_path,
-            revision=model_args.model_revision,
-            torch_dtype=torch.float16 if torch.cuda.is_available() else None,
-            use_cache=False if training_args.gradient_checkpointing else True,
-            load_in_8bit=True if torch.cuda.is_available() else False,
-            device_map={"": Accelerator().process_index} if torch.cuda.is_available() else None,
-        )
-        model.resize_token_embeddings(len(tokenizer))
-
-        #####################################################################
-        # Hack to enable INT training with special tokens & trainable embeds
-        #
-        # Replace with `prepare_model_for_int8_training` when fixed in `peft`
-        #####################################################################
-        for param in model.parameters():
-            if param.dtype == torch.float16:
-                param.data = param.data.to(torch.float32)
-
-        model.enable_input_require_grads()
-
-        for name, param in model.named_parameters():
-            # TODO: Not 100% sure it makes sense to freeze the embedding & lm_head layers
-            if any([name in module for module in model_args.lora_modules_to_save]):
-                continue
-            param.requires_grad = False
-        #############
-        # End of hack
-        #############
-
-        peft_config = LoraConfig(
-            r=model_args.lora_r,
-            lora_alpha=model_args.lora_alpha,
-            lora_dropout=model_args.lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM",
-            target_modules=model_args.lora_target_modules,
-            modules_to_save=model_args.lora_modules_to_save,
-        )
-        model = get_peft_model(model, peft_config)
-        logger.info(model.print_trainable_parameters())
-    else:
-        model = AutoModelForCausalLM.from_pretrained(
-            model_args.model_name_or_path,
-            revision=model_args.model_revision,
-            torch_dtype=torch_dtype,
-            use_cache=False if training_args.gradient_checkpointing else True,
-        )
-        model.resize_token_embeddings(len(tokenizer))
+    model = AutoModelForCausalLM.from_pretrained(
+        model_args.model_name_or_path,
+        revision=model_args.model_revision,
+        torch_dtype=torch_dtype,
+        use_cache=False if training_args.gradient_checkpointing else True,
+    )
+    model.resize_token_embeddings(len(tokenizer))
 
     ########################
     # Initialize the Trainer
@@ -373,21 +327,10 @@ def main():
     dialogue_template.save_pretrained(training_args.output_dir)
 
     if training_args.push_to_hub:
-        if model_args.use_peft:
-            model.push_to_hub(training_args.output_dir)
-            tokenizer.push_to_hub(training_args.output_dir)
-        else:
-            trainer.push_to_hub(**kwargs)
+        trainer.push_to_hub(**kwargs)
     else:
-        if model_args.use_peft:
-            # Only save on main process
-            if trainer.args.should_save:
-                model.save_pretrained(training_args.output_dir)
-                tokenizer.save_pretrained(training_args.output_dir)
-                trainer.create_model_card(**kwargs)
-        else:
-            trainer.save_model(training_args.output_dir)
-            trainer.create_model_card(**kwargs)
+        trainer.save_model(training_args.output_dir)
+        trainer.create_model_card(**kwargs)
 
     with training_args.main_process_first(desc="Generate a sample from the model"):
         inputs = tokenizer(

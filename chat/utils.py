@@ -18,9 +18,8 @@ import os
 from dataclasses import dataclass
 from typing import List, Optional
 
-from transformers import AutoConfig, HfArgumentParser
-
 from huggingface_hub import login
+from transformers import AutoConfig, HfArgumentParser
 
 
 class StarChatArgumentParser(HfArgumentParser):

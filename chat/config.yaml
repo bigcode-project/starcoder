@@ -1,7 +1,7 @@
 # This settings in this config are known to produce a well-tuned llama-7b model on the Alpaca dataset.
 
 # Model arguments
-model_name_or_path: EleutherAI/pythia-70m #bigcode/starcoderbase
+model_name_or_path: bigcode/starcoderbase
 
 # Data training arguments
 block_size: 1024

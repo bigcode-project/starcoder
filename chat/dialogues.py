@@ -21,12 +21,12 @@ from typing import Any, Dict, List, Optional, Type, TypeVar, Union
 
 from huggingface_hub import ModelHubMixin, hf_hub_download
 
-
 # Generic variable that is either ModelHubMixin or a subclass thereof
 T = TypeVar("T", bound="ModelHubMixin")
 
 TEMPLATE_FILENAME = "dialogue_template.json"
 IGNORE_INDEX = -100
+
 
 @dataclass
 class DialogueTemplate(ModelHubMixin):
