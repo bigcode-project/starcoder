@@ -5,7 +5,10 @@
 
 # Disclaimer
 
-Before you can use the model go to `hf.co/bigcode/starcoder` and accept the agreement.
+Before you can use the model go to `hf.co/bigcode/starcoder` and accept the agreement. And make sure you are logged into the Hugging Face hub with:
+```bash
+huggingface-cli login
+```
 
 # Table of Contents
 1. [Quickstart](#quickstart)
@@ -36,7 +39,8 @@ checkpoint = "bigcode/starcoder"
 device = "cuda" # for GPU usage or "cpu" for CPU usage
 
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-model = AutoModelForCausalLM.from_pretrained(checkpoint, trust_remote_code=True).to(device)
+# to save memory consider using fp16 or bf16 by specifying torch.dtype=torch.float16 for example
+model = AutoModelForCausalLM.from_pretrained(checkpoint).to(device)
 
 inputs = tokenizer.encode("def print_hello_world():", return_tensors="pt").to(device)
 outputs = model.generate(inputs)
