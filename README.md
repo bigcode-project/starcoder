@@ -36,7 +36,7 @@ checkpoint = "bigcode/starcoder"
 device = "cuda" # for GPU usage or "cpu" for CPU usage
 
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-model = AutoModelForCausalLM.from_pretrained(checkpoint, trust_remote_code=True).to(device)
+model = AutoModelForCausalLM.from_pretrained(checkpoint).to(device)
 
 inputs = tokenizer.encode("def print_hello_world():", return_tensors="pt").to(device)
 outputs = model.generate(inputs)
@@ -45,10 +45,10 @@ print(tokenizer.decode(outputs[0]))
 or
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-model_ckpt = "bigcode/starcoder"
+checkpoint = "bigcode/starcoder"
 
-model = AutoModelForCausalLM.from_pretrained(model_ckpt)
-tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
+model = AutoModelForCausalLM.from_pretrained(checkpoint)
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
 pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
 print( pipe("def hello():") )
