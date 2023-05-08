@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright 2023 The HuggingFace Inc. team. All rights reserved.
+# Copyright 2023 The BigCode & HuggingFace Inc. teams. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,16 +29,16 @@ from itertools import chain
 import datasets
 import torch
 import transformers
-from config import DataArguments, ModelArguments, TrainingArguments
 from datasets import load_dataset
-from dialogues import get_dialogue_template, mask_user_labels, prepare_dialogue
 from transformers import (AutoModelForCausalLM, AutoTokenizer, Trainer,
                           default_data_collator, set_seed)
 from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
-from utils import StarChatArgumentParser, hf_login, init_wandb_training
 
 import wandb
+from config import DataArguments, ModelArguments, TrainingArguments
+from dialogues import get_dialogue_template, mask_user_labels, prepare_dialogue
+from utils import StarChatArgumentParser, hf_login, init_wandb_training
 
 logger = logging.getLogger(__name__)
 
