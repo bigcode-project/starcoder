@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import transformers
 from transformers import MODEL_FOR_CAUSAL_LM_MAPPING
@@ -61,36 +61,8 @@ class DataArguments:
     """
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
-
-    dataset_mixer: Optional[Dict[str, float]] = field(
-        default=None,
-        metadata={"help": ("Datasets and their proportions to be used for training ift/rl.")},
-    )
-    data_filter_fn: Optional[str] = field(
-        default=None, metadata={"help": "option to include non-default data filtering (e.g. for toxicity example)."}
-    )
-    data_tokenize_fn: Optional[str] = field(
-        default=None,
-        metadata={"help": "option to include non-default data tokenization (for datasets not in the format)."},
-    )
     dataset_name: Optional[str] = field(
         default=None, metadata={"help": "The name of the dataset to use (via the datasets library)."}
-    )
-    dataset_config_name: Optional[str] = field(
-        default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."}
-    )
-    dataset_split_name: Optional[str] = field(
-        default="train", metadata={"help": "The dataset split to use (via the datasets library)."}
-    )
-    prompt_column: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": "The name of the column in the datasets containing the model prompt (usually an instruction)."
-        },
-    )
-    completion_column: Optional[str] = field(
-        default=None,
-        metadata={"help": "The name of the column in the datasets containing the completions."},
     )
     max_train_samples: Optional[int] = field(
         default=None,
@@ -110,15 +82,6 @@ class DataArguments:
             )
         },
     )
-    max_predict_samples: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": (
-                "For debugging purposes or quicker training, truncate the number of prediction examples to this "
-                "value if set."
-            )
-        },
-    )
     block_size: Optional[int] = field(
         default=None,
         metadata={
@@ -132,93 +95,9 @@ class DataArguments:
     overwrite_cache: bool = field(
         default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
     )
-    validation_split_percentage: Optional[int] = field(
-        default=5,
-        metadata={
-            "help": "The percentage of the train set used as validation set in case there's no validation split"
-        },
-    )
-    pre_tokenized: Optional[bool] = field(
-        default=False,
-        metadata={"help": "If the training dataset is pre-tokenized."},
-    )
     preprocessing_num_workers: Optional[int] = field(
         default=None,
         metadata={"help": "The number of processes to use for the preprocessing."},
-    )
-    max_source_length: Optional[int] = field(
-        default=128,
-        metadata={
-            "help": (
-                "The maximum total input sequence length after tokenization. Sequences longer "
-                "than this will be truncated, sequences shorter will be padded."
-            )
-        },
-    )
-    max_target_length: Optional[int] = field(
-        default=128,
-        metadata={
-            "help": (
-                "The maximum total sequence length for target text after tokenization. Sequences longer "
-                "than this will be truncated, sequences shorter will be padded."
-            )
-        },
-    )
-    val_max_target_length: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": (
-                "The maximum total sequence length for validation target text after tokenization. Sequences longer "
-                "than this will be truncated, sequences shorter will be padded. Will default to `max_target_length`."
-                "This argument is also used to override the ``max_length`` param of ``model.generate``, which is used "
-                "during ``evaluate`` and ``predict``."
-            )
-        },
-    )
-    pad_to_max_length: bool = field(
-        default=False,
-        metadata={
-            "help": (
-                "Whether to pad all samples to model maximum sentence length. "
-                "If False, will pad the samples dynamically when batching to the maximum length in the batch. More "
-                "efficient on GPU but very bad for TPU."
-            )
-        },
-    )
-    num_beams: Optional[int] = field(
-        default=None,
-        metadata={
-            "help": (
-                "Number of beams to use for evaluation. This argument will be passed to ``model.generate``, "
-                "which is used during ``evaluate`` and ``predict``."
-            )
-        },
-    )
-    ignore_pad_token_for_loss: bool = field(
-        default=True,
-        metadata={
-            "help": "Whether to ignore the tokens corresponding to padded labels in the loss computation or not."
-        },
-    )
-    source_prefix: Optional[str] = field(
-        default="", metadata={"help": "A prefix to add before every source text (useful for T5 models)."}
-    )
-
-    forced_bos_token: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": (
-                "The token to force as the first generated token after the decoder_start_token_id."
-                "Useful for multilingual models like mBART where the first generated token"
-                "needs to be the target language token (Usually it is the target language token)"
-            )
-        },
-    )
-    prompt_template: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": "The name of the prompt template to use for conditioning the model. Deprecated in favour of `dialogue_template`"
-        },
     )
     dialogue_template: Optional[str] = field(
         default="no_system",
@@ -226,10 +105,6 @@ class DataArguments:
             "help": "The name of the dialogue template to use for conditioning the model. See h4.training.dialogues for choices."
         },
     )
-
-    def __post_init__(self):
-        if self.val_max_target_length is None:
-            self.val_max_target_length = self.max_target_length
 
 
 @dataclass
