@@ -23,7 +23,7 @@ log_level: passive
 logging_steps: 8
 logging_strategy: steps
 lr_scheduler_type: cosine
-max_steps: 1
+max_steps: -1
 num_train_epochs: 3
 output_dir: data/starcoderbase-finedtuned-oasst1
 overwrite_output_dir: true
