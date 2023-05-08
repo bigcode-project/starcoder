@@ -1,5 +1,7 @@
 # 💫 StarCoder
 
+[Paper](https://drive.google.com/file/d/1cN-b9GnWtHzQRoE7M7gAEyivY0kl4BYs/view) | [Model](https://huggingface.co/bigcode/starcoder) | [Playground](https://huggingface.co/spaces/bigcode/bigcode-playground) | [VSCode](https://marketplace.visualstudio.com/items?itemName=HuggingFace.huggingface-vscode) | [Chat](https://huggingface.co/chat/?model=bigcode/starcoder)
+
 # What is this about?
 💫 StarCoder is a language model (LM) trained on source code and natural language text. Its training data incorporates more that 80 different programming languages as well as text extracted from github issues and commits and from notebooks. This repository showcases how we get an overview of this LM's capabilities.
 
@@ -49,10 +51,10 @@ print(tokenizer.decode(outputs[0]))
 or
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-model_ckpt = "bigcode/starcoder"
+checkpoint = "bigcode/starcoder"
 
-model = AutoModelForCausalLM.from_pretrained(model_ckpt)
-tokenizer = AutoTokenizer.from_pretrained(model_ckpt)
+model = AutoModelForCausalLM.from_pretrained(checkpoint)
+tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 
 pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
 print( pipe("def hello():") )
