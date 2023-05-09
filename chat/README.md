@@ -44,7 +44,7 @@ To run the `train.py` script, first create a Python virtual environment using e.
 conda create -n chat python=3.10 && conda activate chat
 ```
 
-Next, install PyTorch v1.13.1. Since this hardware-dependent, we direct you to the [PyTorch Installation Page](https://pytorch.org/get-started/previous-versions/#v1131) for this step. Once you've installed it, install the rest of the project dependencies:
+Next, install PyTorch v1.13.1. Since this is hardware-dependent, we direct you to the [PyTorch Installation Page](https://pytorch.org/get-started/previous-versions/#v1131) for this step. Next, install the rest of the project dependencies:
 
 ```shell
 pip install -r requirements.txt
