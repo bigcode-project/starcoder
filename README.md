@@ -5,6 +5,10 @@
 # What is this about?
 💫 StarCoder is a language model (LM) trained on source code and natural language text. Its training data incorporates more that 80 different programming languages as well as text extracted from GitHub issues and commits and from notebooks. This repository showcases how we get an overview of this LM's capabilities.
 
+# News
+
+* **May 9, 2023:** We've fine-tuned StarCoder to act as a helpful coding assistant 💬! Check out the `chat/` directory for the training code and play with the model [here](https://huggingface.co/spaces/HuggingFaceH4/starchat-playground).
+
 # Disclaimer
 
 Before you can use the model go to `hf.co/bigcode/starcoder` and accept the agreement. And make sure you are logged into the Hugging Face hub with:

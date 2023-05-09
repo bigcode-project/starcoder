@@ -1,0 +1,42 @@
+# Model arguments
+model_name_or_path: bigcode/starcoderbase
+
+# Data training arguments
+block_size: 1024
+dataset_name: HuggingFaceH4/oasst1_en
+dialogue_template: no_system
+preprocessing_num_workers: 12
+
+# Training arguments with sensible defaults
+# Add other options from here: https://huggingface.co/docs/transformers/v4.26.1/en/main_classes/trainer#transformers.TrainingArguments
+bf16: true # Gives ~2x speed up in training time, but disable if you start seeing NaNs
+do_eval: true
+do_train: true
+evaluation_strategy: epoch # One of ["no", "steps", "epoch"]
+gradient_accumulation_steps: 8
+gradient_checkpointing: true
+hub_model_id: lewtun/starchat-alpha
+hub_private_repo: true
+hub_strategy: every_save
+learning_rate: 2.0e-05
+log_level: passive
+logging_steps: 8
+logging_strategy: steps
+lr_scheduler_type: cosine
+max_steps: -1
+num_train_epochs: 3
+output_dir: data/starchat-alpha
+overwrite_output_dir: true
+per_device_eval_batch_size: 4
+per_device_train_batch_size: 4
+push_to_hub: true
+remove_unused_columns: true
+report_to:
+- tensorboard
+save_steps: 500
+save_strategy: steps
+save_total_limit: null
+seed: 42
+tf32: true
+warmup_ratio: 0.03
+weight_decay: 0.
