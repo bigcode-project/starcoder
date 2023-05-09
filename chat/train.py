@@ -29,14 +29,13 @@ from itertools import chain
 import datasets
 import torch
 import transformers
+from config import DataArguments, ModelArguments, TrainingArguments
 from datasets import load_dataset
+from dialogues import get_dialogue_template, mask_user_labels, prepare_dialogue
 from transformers import (AutoModelForCausalLM, AutoTokenizer, Trainer,
                           default_data_collator, set_seed)
 from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
-
-from config import DataArguments, ModelArguments, TrainingArguments
-from dialogues import get_dialogue_template, mask_user_labels, prepare_dialogue
 from utils import StarChatArgumentParser, hf_login
 
 logger = logging.getLogger(__name__)

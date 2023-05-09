@@ -17,10 +17,9 @@
 import argparse
 
 import torch
+from dialogues import DialogueTemplate, get_dialogue_template
 from transformers import (AutoModelForCausalLM, AutoTokenizer,
                           GenerationConfig, set_seed)
-
-from dialogues import DialogueTemplate, get_dialogue_template
 
 
 def main():

@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from huggingface_hub import login
-from transformers import AutoConfig, HfArgumentParser
+from transformers import HfArgumentParser
 
 
 class StarChatArgumentParser(HfArgumentParser):
@@ -56,16 +56,6 @@ class StarChatArgumentParser(HfArgumentParser):
             outputs.append(obj)
 
         return outputs
-
-
-def get_model_architecture(model_path_or_name: str, revision: str = "main") -> str:
-    config = AutoConfig.from_pretrained(model_path_or_name, revision=revision)
-    architectures = config.architectures
-    if architectures is None or len(architectures) > 1:
-        raise ValueError(
-            f"The model architecture is either not defined or not unique. Found architectures: {architectures}"
-        )
-    return architectures[0]
 
 
 def hf_login():
