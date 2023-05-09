@@ -35,10 +35,9 @@ from transformers import (AutoModelForCausalLM, AutoTokenizer, Trainer,
 from transformers.testing_utils import CaptureLogger
 from transformers.trainer_utils import get_last_checkpoint
 
-import wandb
 from config import DataArguments, ModelArguments, TrainingArguments
 from dialogues import get_dialogue_template, mask_user_labels, prepare_dialogue
-from utils import StarChatArgumentParser, hf_login, init_wandb_training
+from utils import StarChatArgumentParser, hf_login
 
 logger = logging.getLogger(__name__)
 
@@ -82,10 +81,6 @@ def main():
     logger.info(f"Model parameters {model_args}")
     logger.info(f"Data parameters {data_args}")
     logger.info(f"Training/evaluation parameters {training_args}")
-
-    # Setup WandB
-    if training_args.wandb_enabled:
-        init_wandb_training(training_args)
 
     # Login to HuggingFace Hub if needed
     hf_login()
@@ -345,8 +340,6 @@ def main():
             eos_token_id=tokenizer.convert_tokens_to_ids(dialogue_template.end_token),
         )
         logger.info(f"=== SAMPLE OUTPUT ==\n\n{tokenizer.decode(outputs[0], skip_special_tokens=False)}")
-
-    wandb.finish()
 
 
 if __name__ == "__main__":

@@ -118,31 +118,3 @@ class TrainingArguments(transformers.TrainingArguments):
         metadata={"help": ("Whether to log and evaluate the first global_step or not.")},
     )
     optim: Optional[str] = field(default="adamw_torch")
-    wandb_tags: Optional[List[str]] = field(
-        default=None,
-        metadata={"help": ("Tags to group and filter runs on Weights and Biases.")},
-    )
-    wandb_enabled: Optional[bool] = field(
-        default=True,
-        metadata={"help": ("Whether to enable or disable WandB.")},
-    )
-    wandb_project: Optional[str] = field(
-        default="h4",
-        metadata={"help": ("The project to store runs under.")},
-    )
-    wandb_entity: Optional[str] = field(
-        default="huggingface",
-        metadata={"help": ("The entity to store runs under.")},
-    )
-    wandb_run_group: Optional[str] = field(
-        default="tr_00_some-descriptor",
-        metadata={"help": ("Group multiple runs under this group name.")},
-    )
-    wandb_run_id: Optional[str] = field(
-        default=None,
-        metadata={
-            "help": (
-                "Set this to a globally unique string (per project) corresponding to a single run of your script."
-            )
-        },
-    )

@@ -1,30 +1,40 @@
 # Fine-tuning StarCoder for chat-based applications
 
-This is an educational example to fine-tune `StarCoderBase` on a corpus of multi-turn dialogues and thus create a coding assistant that is chatty and helpful. Check out our [blog post](ADD LINK) for more details.
+This is a fully-working example to fine-tune `StarCoder` on a corpus of multi-turn dialogues and thus create a coding assistant that is chatty and helpful. The resulting model is quite good at generating code for plots and other programming tasks. For example, given the prompt:
 
-**Note:** For training and inference, we use _dialogue templates_ to format each message in a conversation. For example, a typical dialogue between a human user and AI assistant takes the form:
-
-```json
-{
-    "messages": [
-        {"content": "Is it possible to imagine a society without law?", "role": "user"},
-        {
-            "content": "It is difficult to imagine a society that is able to be maintained without any semblance of Law. Laws exists for the purpose of maintaining society and past human behavior suggests that there would people that have no interest in promoting social cohesion and norms so it's unlikely that complex social and economic systems could develop without a legal system.",
-            "role": "assistant",
-        },
-        {
-            "content": "It seems like you consider the absence of law equal to the absence of anything that could guide the behaviour of the individual, however there are many other such things, like religion, conscience, tradition to mention few important patterns which are known to have crucial influence on society even today, but also we could imagine more, like universal love if everyone suddenly became 'awaken' in some spiritual sense, or simply just having an omnipotent leader who maintains a certain order without ever codifying the principles in law. Is it still difficult to imagine?",
-            "role": "user",
-        },
-        {
-            "content": "You are correct that there are other factors that can guide behavior in a society and play a role in shaping individuals' behavior and interactions with each other. However, even in societies where these factors are present, laws still serve an important role in maintaining social order and resolving conflicts.",
-            "role": "assistant",
-        }
-    ]
-}
+```
+Draw me a map of the world using geopandas. Make it so that only Germany and Spain are colored red.
 ```
 
-Make sure you convert your dataset according to this schema. You can adjust the model, dataset, and hyperparamters in the `config.yaml` file.
+the model will produce:
+
+```python
+import pandas as pd
+from matplotlib import pyplot as plt
+import geopandas as gpd
+from shapely.geometry import Point, Polygon
+%matplotlib inline
+# Load data from URL or local file
+url = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson'
+df = gpd.read_file(url)
+ 
+# Create plot
+fig, ax = plt.subplots()
+ax.set_aspect('equal')
+world = gpd.GeoDataFrame({'name': ['World'],
+                          'geometry': [Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])]})
+germany = df[df['ADMIN'] == "Germany"]
+spain = df[df['ADMIN'] == "Spain"]
+other = df[(df['ADMIN']!= "Germany") & (df['ADMIN']!= "Spain")]
+world.plot(color='lightgrey', edgecolor='white', ax=ax)
+germany.plot(color="red", ax=ax)
+spain.plot(color="red", ax=ax)
+other.plot(color="skyblue", ax=ax)
+plt.title("European Countries")
+plt.show()
+```
+
+Check out our [blog post](https://huggingface.co/blog/starchat-alpha) for more details.
 
 ## Getting started
 
@@ -40,12 +50,10 @@ Next, install PyTorch v1.13.1. Since this hardware-dependent, we direct you to t
 pip install -r requirements.txt
 ```
 
-You'll also need to be logged into both your Hugging Face and Weights and Biases accounts. To do so, run:
+You'll also need to be logged into both your Hugging Face account. To do so, run:
 
 ```shell
 huggingface-cli login
-
-wandb login
 ```
 
 Finally, install Git LFS with:
@@ -53,6 +61,34 @@ Finally, install Git LFS with:
 ```shell
 sudo apt-get install git-lfs
 ```
+
+## Prepare your dataset
+
+For training and inference, we use _dialogue templates_ to format each message in a conversation. For example, a typical dialogue between a human user and AI assistant takes the form:
+
+```json
+{
+    "messages": [
+        {
+            "content": "Is it possible to imagine a society without law?", 
+            "role": "user"},
+        {
+            "content": "It is difficult to imagine a society that is able to be maintained without any semblance of Law.",
+            "role": "assistant",
+        },
+        {
+            "content": "It seems like you consider the absence of law equal to the absence of anything that could guide the behaviour of the individual.",
+            "role": "user",
+        },
+        {
+            "content": "You are correct that there are other factors that can guide behavior in a society and play a role in shaping individuals' behavior and interactions with each other. However, even in societies where these factors are present, laws still serve an important role in maintaining social order and resolving conflicts.",
+            "role": "assistant",
+        }
+    ]
+}
+```
+
+Make sure you convert your dataset according to this schema, in particular you need to include a `messages` column like the above. You can adjust the model, dataset, and hyperparamters in the `config.yaml` file.
 
 ## Launch training
 
@@ -67,5 +103,9 @@ By default, this will save the model checkpoint in the `data/` directory and als
 
 ## Generate samples
 
-To generate a few examples from your model, run:
+To generate a few coding examples from your model, run:
+
+```shell
+python generate.py --model_id path/to/your/model
+```
 

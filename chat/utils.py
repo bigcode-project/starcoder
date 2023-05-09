@@ -73,35 +73,3 @@ def hf_login():
     hf_token = os.getenv("HF_TOKEN")
     if hf_token is not None:
         login(token=hf_token)
-
-
-def init_wandb_training(training_args):
-    """
-    Helper function for setting up Weights & Biases logging tools.
-    """
-    os.environ["WANDB_ENTITY"] = training_args.wandb_entity
-    os.environ["WANDB_PROJECT"] = training_args.wandb_project
-    os.environ["WANDB_RUN_GROUP"] = training_args.wandb_run_group
-    if training_args.wandb_run_id is not None:
-        os.environ["WANDB_RUN_ID"] = training_args.wandb_run_id
-    if training_args.wandb_tags is not None:
-        os.environ["WANDB_TAGS"] = ",".join(tag for tag in training_args.wandb_tags)
-
-
-def get_wandb_kwargs(training_args):
-    """
-    Helper function for passing off Weights & Biases logging settings to TRL.
-    """
-    tracker_kwargs = {
-        "entity": training_args.wandb_entity,
-        # "wandb_project": training_args.wandb_project, # this is and arg now kwarg in TRL init
-        "group": training_args.wandb_run_group,
-    }
-    if training_args.wandb_run_id is not None:
-        tracker_kwargs["id"] = training_args.wandb_run_id
-    if training_args.wandb_tags is not None:
-        tracker_kwargs["tags"] = training_args.wandb_tags
-
-    return {
-        "wandb": tracker_kwargs,
-    }
