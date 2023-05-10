@@ -67,7 +67,7 @@ print( pipe("def hello():") )
 ## Text-generation-inference
 
 ```bash
-docker run --gpus '"device:0"' -p 8080:80 -v $PWD/data:/data -e HUGGING_FACE_HUB_TOKEN=<YOUR BIGCODE ENABLED TOKEN> -e HF_HUB_ENABLE_HF_TRANSFER=0 -d  ghcr.io/huggingface/text-generation-inference:sha-880a76e --model-id bigcode/starcoder --max-total-tokens 8192
+docker run -p 8080:80 -v $PWD/data:/data -e HUGGING_FACE_HUB_TOKEN=<YOUR BIGCODE ENABLED TOKEN> -d  ghcr.io/huggingface/text-generation-inference:latest --model-id bigcode/starcoder --max-total-tokens 8192
 ```
 For more details, see [here](https://github.com/huggingface/text-generation-inference).
 
