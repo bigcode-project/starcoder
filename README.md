@@ -189,3 +189,5 @@ For example
 python finetune/merge_peft_adapters.py --model_name_or_path bigcode/starcoder --peft_model_path checkpoints/checkpoint-1000 --push_to_hub
 ```
 
+## Evaluation
+To evaluate StarCoder and its derivatives, you can use the [BigCode-Evaluation-Harness](https://github.com/bigcode-project/bigcode-evaluation-harness) for evaluating Code LLMs.
