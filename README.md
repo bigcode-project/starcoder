@@ -26,6 +26,8 @@ huggingface-cli login
     - [Datasets](#datasets)
       - [Stack Exchange](#stack-exchange-se)
     - [Merging PEFT adapter layers](#merging-peft-adapter-layers)
+3. [Evaluation](#evaluation)
+4. [Inference hardware requirements](#inference-hardware-requirements)
 
 # Quickstart
 StarCoder was trained on GitHub code, thus it can be used to perform code generation. More precisely, the model can complete the implementation of a function or infer the following characters in a line of code. This can be done with the help of the 🤗's [transformers](https://github.com/huggingface/transformers) library.
@@ -63,6 +65,7 @@ tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
 print( pipe("def hello():") )
 ```
+For hardware requirements, check the secyoon [Inference hardware requirements](#inference-hardware-requirements).
 
 ## Text-generation-inference
 
@@ -189,5 +192,21 @@ For example
 python finetune/merge_peft_adapters.py --model_name_or_path bigcode/starcoder --peft_model_path checkpoints/checkpoint-1000 --push_to_hub
 ```
 
-## Evaluation
+# Evaluation
 To evaluate StarCoder and its derivatives, you can use the [BigCode-Evaluation-Harness](https://github.com/bigcode-project/bigcode-evaluation-harness) for evaluating Code LLMs.
+
+# Inference hardware requirements
+In FP32 the model requires more than 60GB of RAM, you can load it in FP16 or BF16 in ~30GB, or in 8bit under 20GB of RAM with
+```python
+# make sure you have accelerate and bitsandbytes installed
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained("bigcode/starcoder")
+# for fp16 replace with  `load_in_8bit=True` with   `torch_dtype=torch.float16`
+model = AutoModelForCausalLM.from_pretrained("bigcode/starcoder", device_map="auto", load_in_8bit=True)
+print(f"Memory footprint: {model.get_memory_footprint() / 1e6:.2f} MB")
+````
+```
+Memory footprint: 15939.61 MB
+```
+You can also try [starcoder.cpp](https://github.com/bigcode-project/starcoder.cpp), a C++ implementation with [ggml](https://github.com/ggerganov/ggml) library.
