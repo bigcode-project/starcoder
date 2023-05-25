@@ -65,7 +65,7 @@ tokenizer = AutoTokenizer.from_pretrained(checkpoint)
 pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
 print( pipe("def hello():") )
 ```
-For hardware requirements, check the secyoon [Inference hardware requirements](#inference-hardware-requirements).
+For hardware requirements, check the section [Inference hardware requirements](#inference-hardware-requirements).
 
 ## Text-generation-inference
 
