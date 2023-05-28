@@ -4,7 +4,7 @@ import time
 
 import torch
 from accelerate import Accelerator
-from datasets import Dataset, load_dataset, get_dataset_split_names, train_test_split
+from datasets import Dataset, load_dataset, get_dataset_split_names
 from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, set_peft_model_state_dict
 from torch.utils.data import IterableDataset
 from tqdm import tqdm
@@ -209,20 +209,29 @@ def create_datasets(tokenizer, args):
     )
 
     if len(dataset.keys()) > 1:
-        # If there are multiple splits, use the largest one for training
-        train_data = dataset[max(dataset.keys(), key=lambda key: len(dataset[key]))]
-        # Use the 'test' or 'eval' or 'val' or 'evaluation' split for validation
+        # If there are multiple splits, check for 'train' or 'training' split first
+        if 'train' in dataset.keys():
+            train_data = dataset['train']
+        elif 'training' in dataset.keys():
+            train_data = dataset['training']
+        else:
+            # If there's no 'train' or 'training' split, use the largest one for training
+            train_data = dataset[max(dataset.keys(), key=lambda key: len(dataset[key]))]
+
+        # Check for 'test', 'testing', 'val', 'eval', or 'evaluation' split for validation
         valid_data = None
-        for split in ['test', 'eval', 'val', 'evaluation']:
+        for split in ['test', 'testing', 'val', 'eval', 'evaluation']:
             if split in dataset.keys():
                 valid_data = dataset[split]
                 break
-        # If none of the splits are named 'test', 'eval', 'val', or 'evaluation', use the second largest split for validation
+
+        # If none of the splits are named 'test', 'testing', 'val', 'eval', or 'evaluation', use the second largest split for validation
         if valid_data is None:
             valid_data = dataset[sorted(dataset.keys(), key=lambda key: len(dataset[key]), reverse=True)[1]]
     else:
         # If there's only one split, create the 'test' split
-        train_data, valid_data = train_test_split(dataset[list(dataset.keys())[0]], test_size=0.15)
+        split_dataset = dataset[list(dataset.keys())[0]].train_test_split(test_size=0.15)
+        train_data, valid_data = split_dataset["train"], split_dataset["test"]
 
     print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
 
@@ -248,6 +257,7 @@ def create_datasets(tokenizer, args):
         output_column_name=args.output_column_name
     )
     return train_dataset, valid_dataset
+
 
 
 def run_training(args, train_data, val_data):
