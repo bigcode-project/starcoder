@@ -57,7 +57,7 @@ def get_args():
     parser.add_argument("--dataset_name", type=str, default="HuggingFaceH4/CodeAlpaca_20K")
     parser.add_argument("--subset", type=str)
     parser.add_argument("--train_split", type=str)
-    parser.add_argument("--test_split", type=str)
+    parser.add_argument("--valid_split", type=str)
     parser.add_argument("--size_valid_set", type=int, default=10000)
     parser.add_argument("--streaming", action="store_true")
     parser.add_argument("--shuffle_buffer", type=int, default=5000)
@@ -208,30 +208,29 @@ def create_datasets(tokenizer, args):
         streaming=args.streaming,
     )
 
-    if len(dataset.keys()) > 1:
-        # If there are multiple splits, check for 'train' or 'training' split first
+    if args.train_split and args.train_split in dataset.keys():
+        train_data = dataset[args.train_split]
+    elif len(dataset.keys()) > 1:
         if 'train' in dataset.keys():
             train_data = dataset['train']
         elif 'training' in dataset.keys():
             train_data = dataset['training']
         else:
-            # If there's no 'train' or 'training' split, use the largest one for training
             train_data = dataset[max(dataset.keys(), key=lambda key: len(dataset[key]))]
+    else:
+        split_dataset = dataset[list(dataset.keys())[0]].train_test_split(test_size=0.15)
+        train_data, valid_data = split_dataset["train"], split_dataset["test"]
 
-        # Check for 'test', 'testing', 'val', 'eval', or 'evaluation' split for validation
+    if args.valid_split and args.valid_split in dataset.keys():
+        valid_data = dataset[args.valid_split]
+    elif len(dataset.keys()) > 1:
         valid_data = None
         for split in ['test', 'testing', 'val', 'eval', 'evaluation']:
             if split in dataset.keys():
                 valid_data = dataset[split]
                 break
-
-        # If none of the splits are named 'test', 'testing', 'val', 'eval', or 'evaluation', use the second largest split for validation
         if valid_data is None:
             valid_data = dataset[sorted(dataset.keys(), key=lambda key: len(dataset[key]), reverse=True)[1]]
-    else:
-        # If there's only one split, create the 'test' split
-        split_dataset = dataset[list(dataset.keys())[0]].train_test_split(test_size=0.15)
-        train_data, valid_data = split_dataset["train"], split_dataset["test"]
 
     print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
 
@@ -257,6 +256,7 @@ def create_datasets(tokenizer, args):
         output_column_name=args.output_column_name
     )
     return train_dataset, valid_dataset
+
 
 
 
@@ -310,6 +310,7 @@ def run_training(args, train_data, val_data):
         run_name="StarCoder-finetuned",
         report_to="wandb",
         ddp_find_unused_parameters=False,
+        load_best_model_at_end=True,
     )
 
     trainer = Trainer(model=model, args=training_args, train_dataset=train_data, eval_dataset=val_data, callbacks=[SavePeftModelCallback, LoadBestPeftModelCallback])
@@ -318,7 +319,11 @@ def run_training(args, train_data, val_data):
     trainer.train()
 
     print("Saving last checkpoint of the model")
-    model.save_pretrained(os.path.join(args.output_dir, "final_checkpoint/"))
+    final_checkpoint_path = os.path.join(args.output_dir, "final_checkpoint/")
+    model.save_pretrained(final_checkpoint_path)
+
+    print("Pushing the model to the hub")
+    model.push_to_hub(final_checkpoint_path)
 
 
 def main(args):
