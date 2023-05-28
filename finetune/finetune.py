@@ -10,6 +10,7 @@ from tqdm import tqdm
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments, logging, set_seed
 from transformers import TrainerCallback, TrainingArguments, TrainerState, TrainerControl
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
+from datasets import get_dataset_split_names
 
 """
 Fine-Tune StarCoder on Code Alpaca/SE
@@ -53,7 +54,8 @@ def get_args():
     parser.add_argument("--model_path", type=str, default="bigcode/large-model")
     parser.add_argument("--dataset_name", type=str, default="HuggingFaceH4/CodeAlpaca_20K")
     parser.add_argument("--subset", type=str)
-    parser.add_argument("--split", type=str)
+    parser.add_argument("--train_split", type=str)
+    parser.add_argument("--test_split", type=str)
     parser.add_argument("--size_valid_set", type=int, default=10000)
     parser.add_argument("--streaming", action="store_true")
     parser.add_argument("--shuffle_buffer", type=int, default=5000)
@@ -192,10 +194,20 @@ class ConstantLengthDataset(IterableDataset):
 
 
 def create_datasets(tokenizer, args):
-    dataset = load_dataset(
+    train_split = getattr(args, 'train_split', 'train')
+    test_split = getattr(args, 'test_split', 'test')
+    train_dataset = load_dataset(
         args.dataset_name,
         data_dir=args.subset,
-        split=args.split,
+        split=train_split,
+        use_auth_token=True,
+        num_proc=args.num_workers if not args.streaming else None,
+        streaming=args.streaming,
+    )
+    test_dataset = load_dataset(
+        args.dataset_name,
+        data_dir=args.subset,
+        split=test_split,
         use_auth_token=True,
         num_proc=args.num_workers if not args.streaming else None,
         streaming=args.streaming,
@@ -206,8 +218,8 @@ def create_datasets(tokenizer, args):
         train_data = dataset.skip(args.size_valid_set)
         train_data = train_data.shuffle(buffer_size=args.shuffle_buffer, seed=args.seed)
     else:
-        train_data = dataset["train"]
-        valid_data = dataset["test"]
+        train_data = train_dataset
+        valid_data = test_dataset
         print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
 
     chars_per_token = chars_token_ratio(train_data, tokenizer, args.input_column_name, args.output_column_name)
