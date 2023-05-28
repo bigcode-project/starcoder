@@ -1,20 +1,22 @@
 import argparse
 import os
+import time
 
 import torch
 from accelerate import Accelerator
-from datasets import load_dataset
+from datasets import Dataset, load_dataset, get_dataset_split_names, train_test_split
 from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, set_peft_model_state_dict
 from torch.utils.data import IterableDataset
 from tqdm import tqdm
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments, logging, set_seed
 from transformers import TrainerCallback, TrainingArguments, TrainerState, TrainerControl
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
-from datasets import get_dataset_split_names
+
 
 """
 Fine-Tune StarCoder on Code Alpaca/SE
 """
+
 
 class SavePeftModelCallback(TrainerCallback):
     def on_save(
@@ -198,33 +200,31 @@ class ConstantLengthDataset(IterableDataset):
 
 
 def create_datasets(tokenizer, args):
-    train_split = getattr(args, 'train_split', 'train')
-    test_split = getattr(args, 'test_split', 'test')
-    train_dataset = load_dataset(
+    dataset = load_dataset(
         args.dataset_name,
         data_dir=args.subset,
-        split=train_split,
         use_auth_token=True,
         num_proc=args.num_workers if not args.streaming else None,
         streaming=args.streaming,
     )
-    test_dataset = load_dataset(
-        args.dataset_name,
-        data_dir=args.subset,
-        split=test_split,
-        use_auth_token=True,
-        num_proc=args.num_workers if not args.streaming else None,
-        streaming=args.streaming,
-    )
-    if args.streaming:
-        print("Loading the dataset in streaming mode")
-        valid_data = dataset.take(args.size_valid_set)
-        train_data = dataset.skip(args.size_valid_set)
-        train_data = train_data.shuffle(buffer_size=args.shuffle_buffer, seed=args.seed)
+
+    if len(dataset.keys()) > 1:
+        # If there are multiple splits, use the largest one for training
+        train_data = dataset[max(dataset.keys(), key=lambda key: len(dataset[key]))]
+        # Use the 'test' or 'eval' or 'val' or 'evaluation' split for validation
+        valid_data = None
+        for split in ['test', 'eval', 'val', 'evaluation']:
+            if split in dataset.keys():
+                valid_data = dataset[split]
+                break
+        # If none of the splits are named 'test', 'eval', 'val', or 'evaluation', use the second largest split for validation
+        if valid_data is None:
+            valid_data = dataset[sorted(dataset.keys(), key=lambda key: len(dataset[key]), reverse=True)[1]]
     else:
-        train_data = train_dataset
-        valid_data = test_dataset
-        print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
+        # If there's only one split, create the 'test' split
+        train_data, valid_data = train_test_split(dataset[list(dataset.keys())[0]], test_size=0.15)
+
+    print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
 
     chars_per_token = chars_token_ratio(train_data, tokenizer, args.input_column_name, args.output_column_name)
     print(f"The character to token ratio of the dataset is: {chars_per_token:.2f}")
