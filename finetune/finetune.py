@@ -78,7 +78,6 @@ def get_args():
     parser.add_argument("--num_warmup_steps", type=int, default=100)
     parser.add_argument("--weight_decay", type=float, default=0.05)
 
-    parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--no_fp16", action="store_false")
     parser.add_argument("--bf16", action="store_true", default=True)
     parser.add_argument("--no_gradient_checkpointing", action="store_false", default=False)
@@ -91,6 +90,8 @@ def get_args():
 
     return parser.parse_args()
 
+# Get the local rank from the environment variable for torchrun
+local_rank = int(os.getenv('LOCAL_RANK', '0'))
 
 def chars_token_ratio(dataset, tokenizer, input_column_name="prompt", output_column_name="completion", nb_examples=400):
     """
