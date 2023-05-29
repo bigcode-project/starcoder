@@ -266,7 +266,7 @@ def run_training(args, train_data, val_data):
         print("Loading the model")
 
     model = AutoModelForCausalLM.from_pretrained(
-        args.model_path,
+        pretrained_model_name_or_path=args.model_path,
         use_auth_token=True,
         use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,
@@ -325,12 +325,11 @@ def run_training(args, train_data, val_data):
     trainer = Trainer(model=model, args=training_args, train_dataset=train_data, eval_dataset=val_data, callbacks=[SavePeftModelCallback, LoadBestPeftModelCallback])
     trainer.train()
     
-    if dist.get_rank() == 0:
-        print("Saving last checkpoint of the model")
-        final_checkpoint_path = os.path.join(args.output_dir, "final_checkpoint/")
-        model.save_pretrained(final_checkpoint_path)
-        print("Pushing the model to the hub")
-        model.push_to_hub(final_checkpoint_path)
+    print("Saving last checkpoint of the model")
+    final_checkpoint_path = os.path.join(args.output_dir, "final_cp/")
+    model.save_pretrained(final_checkpoint_path)
+    print("Pushing the model to the hub")
+    model.push_to_hub(final_checkpoint_path)
 
 
 def main(args):
