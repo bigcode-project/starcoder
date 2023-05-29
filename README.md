@@ -140,7 +140,8 @@ python finetune/finetune.py \
   --model_path="bigcode/starcoder"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
   --subset="data/finetune"\
-  --split="train"\
+  --train_split="train" \
+  --valid_split="val" \
   --size_valid_set 10000\
   --streaming\
   --seq_length 2048\
@@ -154,29 +155,32 @@ python finetune/finetune.py \
   --num_warmup_steps 100\
   --weight_decay 0.05\
   --output_dir="./checkpoints" \
+  --save_limit 20 
 ```
 The size of the SE dataset is better manageable when using streaming. We also have to precise the split of the dataset that is used. For more details, check the [dataset's page](https://huggingface.co/datasets/ArmelR/stack-exchange-instruction) on 🤗. Similarly we can modify the command to account for the availability of GPUs
 
 ```bash
-python -m torch.distributed.launch \
-  --nproc_per_node number_of_gpus finetune/finetune.py \
-  --model_path="bigcode/starcoder"\
-  --dataset_name="ArmelR/stack-exchange-instruction"\
-  --subset="data/finetune"\
-  --split="train"\
-  --size_valid_set 10000\
+torchrun --nproc_per_node=number_of_gpus \
+   finetune/finetune.py \
+  --model_path="bigcode/starcoder" \
+  --dataset_name="ArmelR/stack-exchange-instruction" \
+  --subset="data/finetune" \
+  --train_split="train" \
+  --valid_split="val" \
+  --size_valid_set 10000 \
   --streaming \
-  --seq_length 2048\
-  --max_steps 1000\
-  --batch_size 1\
-  --input_column_name="question"\
-  --output_column_name="response"\ 
-  --gradient_accumulation_steps 16\
-  --learning_rate 1e-4\
-  --lr_scheduler_type="cosine"\
-  --num_warmup_steps 100\
-  --weight_decay 0.05\
+  --seq_length 2048 \
+  --max_steps 1000 \
+  --batch_size 1 \
+  --input_column_name="question" \
+  --output_column_name="response" \ 
+  --gradient_accumulation_steps 16 \
+  --learning_rate 1e-4 \
+  --lr_scheduler_type="cosine" \
+  --num_warmup_steps 100 \
+  --weight_decay 0.05 \
   --output_dir="./checkpoints" \
+  --save_limit 20 
 ```
 ## Merging PEFT adapter layers
 If you train a model with PEFT, you'll need to merge the adapter layers with the base model if you want to run inference / evaluation. To do so, run:
