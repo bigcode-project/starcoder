@@ -1,6 +1,5 @@
 import argparse
 import os
-import time
 
 import torch
 from accelerate import Accelerator
@@ -89,6 +88,7 @@ def get_args():
     parser.add_argument("--log_freq", default=100, type=int)
     parser.add_argument("--eval_freq", default=100, type=int)
     parser.add_argument("--save_freq", default=1000, type=int)
+    parser.add_argument("--save_limit", default=1000, type=int)
 
     return parser.parse_args()
 
@@ -295,6 +295,9 @@ def run_training(args, train_data, val_data):
         evaluation_strategy="steps",
         max_steps=args.max_steps,
         eval_steps=args.eval_freq,
+        save_strategy="steps",
+        save_total_limit=args.save_limit,
+        hub_strategy="all_checkpoints",
         save_steps=args.save_freq,
         logging_steps=args.log_freq,
         per_device_train_batch_size=args.batch_size,
