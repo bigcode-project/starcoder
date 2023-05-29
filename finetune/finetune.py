@@ -291,6 +291,7 @@ def run_training(args, train_data, val_data):
 
     training_args = TrainingArguments(
         output_dir=args.output_dir,
+        optim="adamw_torch",
         dataloader_drop_last=True,
         evaluation_strategy="steps",
         max_steps=args.max_steps,
@@ -320,14 +321,12 @@ def run_training(args, train_data, val_data):
 
     print("Training...")
     trainer.train()
-
-    print("Saving last checkpoint of the model")
-    final_checkpoint = os.path.join(args.output_dir, "final_checkpoint")
+    
     final_checkpoint_path = os.path.join(args.output_dir, "final_checkpoint/")
     model.save_pretrained(final_checkpoint_path)
 
     print("Pushing the model to the hub")
-    model.push_to_hub(final_checkpoint)
+    model.push_to_hub(final_checkpoint_path)
 
 
 def main(args):
