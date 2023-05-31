@@ -1,6 +1,6 @@
 import argparse
 import os
-
+from datetime import timedelta
 import torch
 import torch.distributed as dist
 from accelerate import Accelerator
@@ -8,6 +8,7 @@ from datasets import Dataset, load_dataset, get_dataset_split_names
 from peft import LoraConfig, get_peft_model, prepare_model_for_int8_training, set_peft_model_state_dict
 from torch.utils.data import IterableDataset
 from tqdm import tqdm
+import transformers
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments, logging, set_seed
 from transformers import TrainerCallback, TrainingArguments, TrainerState, TrainerControl
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
@@ -49,7 +50,13 @@ class LoadBestPeftModelCallback(TrainerCallback):
         model = kwargs["model"]
         set_peft_model_state_dict(model, adapters_weights)
         return control
-    
+
+class CustomLoggingCallback(TrainerCallback):
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        step = state.global_step
+        loss = logs.get("loss", None)
+        if loss is not None:
+            print(f"Step: {step}, Loss: {loss}")
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -262,18 +269,33 @@ def create_datasets(tokenizer, args):
 
 
 def run_training(args, train_data, val_data):
+
     if dist.get_rank() == 0:
         print("Loading the model")
-
-    model = AutoModelForCausalLM.from_pretrained(
-        pretrained_model_name_or_path=args.model_path,
-        use_auth_token=True,
-        use_cache=not args.no_gradient_checkpointing,
-        load_in_8bit=True,
-        device_map={"": Accelerator().process_index},
-    )
+        model = AutoModelForCausalLM.from_pretrained(
+            pretrained_model_name_or_path=args.model_path,
+            use_auth_token=True,
+            use_cache=not args.no_gradient_checkpointing,
+            load_in_8bit=True,
+            device_map='auto',
+        )
+        torch.save(model.state_dict(), "temp_model.pth")
+        dist.barrier()
+    else:
+        dist.barrier()
+        model = AutoModelForCausalLM.from_pretrained(
+            pretrained_model_name_or_path=args.model_path,
+            use_auth_token=True,
+            use_cache=not args.no_gradient_checkpointing,
+            load_in_8bit=True,
+            device_map='auto',
+        )
+        model.load_state_dict(torch.load("temp_model.pth"))
+        
+    print("Loaded model, step 1/4")
     model = prepare_model_for_int8_training(model)
-
+    
+    print("Loaded model, step 2/4")
     lora_config = LoraConfig(
         r=args.lora_r,
         lora_alpha=args.lora_alpha,
@@ -282,9 +304,11 @@ def run_training(args, train_data, val_data):
         task_type="CAUSAL_LM",
         target_modules = ["c_proj", "c_attn", "q_attn"]
     )
-
+    print("Loaded model, step 3/4")
+    
     model = get_peft_model(model, lora_config)
-
+    print("Loaded model, step 4/4")
+    
     print_trainable_parameters(model)
 
     train_data.start_iteration = 0
@@ -318,11 +342,12 @@ def run_training(args, train_data, val_data):
         report_to="wandb",
         ddp_find_unused_parameters=False,
         load_best_model_at_end=True,
+        dataloader_num_workers=args.num_workers,
     )
     if dist.get_rank() == 0:
         print("Training...")
         
-    trainer = Trainer(model=model, args=training_args, train_dataset=train_data, eval_dataset=val_data, callbacks=[SavePeftModelCallback, LoadBestPeftModelCallback])
+    trainer = Trainer(model=model, args=training_args, train_dataset=train_data, eval_dataset=val_data, callbacks=[SavePeftModelCallback, LoadBestPeftModelCallback, CustomLoggingCallback()])
     trainer.train()
     
     print("Saving last checkpoint of the model")
@@ -333,18 +358,19 @@ def run_training(args, train_data, val_data):
 
 
 def main(args):
-    dist.init_process_group(backend='nccl')
+    
     tokenizer = AutoTokenizer.from_pretrained(args.model_path, use_auth_token=True)
     train_dataset, eval_dataset = create_datasets(tokenizer, args)
     run_training(args, train_dataset, eval_dataset)
 
 
 if __name__ == "__main__":
+    dist.init_process_group(backend='nccl', init_method='env://', timeout=timedelta(minutes=60))
     args = get_args()
-
+    torch.set_num_threads(args.num_workers if args.num_workers is not None else 1)
     set_seed(args.seed)
     os.makedirs(args.output_dir, exist_ok=True)
 
-    logging.set_verbosity_error()
+    transformers.logging.set_verbosity_debug()
 
     main(args)
