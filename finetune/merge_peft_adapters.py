@@ -25,7 +25,6 @@ def main():
     model = PeftModel.from_pretrained(base_model, args.peft_model_path)
     model = model.merge_and_unload()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     tokenizer = AutoTokenizer.from_pretrained(args.base_model_name_or_path)
 
     if args.push_to_hub:
