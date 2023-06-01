@@ -1,5 +1,6 @@
 import argparse
 import os
+import socket
 from datetime import timedelta
 import torch
 import torch.distributed as dist
@@ -12,11 +13,6 @@ import transformers
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments, logging, set_seed
 from transformers import TrainerCallback, TrainingArguments, TrainerState, TrainerControl
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
-
-
-"""
-Fine-Tune StarCoder on Code Alpaca/SE
-"""
 
 
 class SavePeftModelCallback(TrainerCallback):
@@ -68,7 +64,8 @@ def get_args():
     parser.add_argument("--size_valid_set", type=int, default=10000)
     parser.add_argument("--streaming", action="store_true")
     parser.add_argument("--shuffle_buffer", type=int, default=5000)
-
+    parser.add_argument("--local_rank", type=int, default=0)
+    
     parser.add_argument("--input_column_name", type=str, default="prompt")
     parser.add_argument("--output_column_name", type=str, default="completion")
 
@@ -99,9 +96,6 @@ def get_args():
     parser.add_argument("--save_limit", default=1000, type=int)
 
     return parser.parse_args()
-
-# Get the local rank from the environment variable for torchrun
-local_rank = int(os.getenv('LOCAL_RANK', '0'))
 
 def chars_token_ratio(dataset, tokenizer, input_column_name="prompt", output_column_name="completion", nb_examples=400):
     """
@@ -144,17 +138,6 @@ def prepare_sample_text(example, input_column_name="prompt", output_column_name=
 
 
 class ConstantLengthDataset(IterableDataset):
-    """
-    Iterable dataset that returns constant length chunks of tokens from stream of text files.
-        Args:
-            tokenizer (Tokenizer): The processor used for proccessing the data.
-            dataset (dataset.Dataset): Dataset with text files.
-            infinite (bool): If True the iterator is reset after dataset reaches end else stops.
-            seq_length (int): Length of token sequences to return.
-            num_of_sequences (int): Number of token sequences to keep in buffer.
-            chars_per_token (int): Number of characters per token used to estimate number of tokens in text buffer.
-    """
-
     def __init__(
         self,
         tokenizer,
@@ -266,31 +249,41 @@ def create_datasets(tokenizer, args):
     return train_dataset, valid_dataset
 
 
-
-
 def run_training(args, train_data, val_data):
 
     if dist.get_rank() == 0:
-        print("Loading the model")
+        print("Loading the model in process with rank 0")
         model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_name_or_path=args.model_path,
             use_auth_token=True,
             use_cache=not args.no_gradient_checkpointing,
             load_in_8bit=True,
             device_map='auto',
+            torch_dtype=torch.float16,
         )
+        print("Model loaded successfully in process with rank 0")
         torch.save(model.state_dict(), "temp_model.pth")
-        dist.barrier()
+        print("Model state dict saved successfully in process with rank 0")
+        print("Waiting for other processes at the barrier")
+        torch.distributed.barrier()
+        print("All processes reached the barrier")
     else:
-        dist.barrier()
+        print(f"Waiting at the barrier in process with rank {dist.get_rank()}")
+        torch.distributed.barrier()
+        print(f"All processes reached the barrier in process with rank {dist.get_rank()}")
+        print(f"Loading the model in process with rank {dist.get_rank()}")
         model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_name_or_path=args.model_path,
             use_auth_token=True,
             use_cache=not args.no_gradient_checkpointing,
             load_in_8bit=True,
             device_map='auto',
+            torch_dtype=torch.float16,
         )
+        print(f"Model loaded successfully in process with rank {dist.get_rank()}")
+        print(f"Loading state dict in process with rank {dist.get_rank()}")
         model.load_state_dict(torch.load("temp_model.pth"))
+        print(f"State dict loaded successfully in process with rank {dist.get_rank()}")
         
     print("Loaded model, step 1/4")
     model = prepare_model_for_int8_training(model)
@@ -358,19 +351,33 @@ def run_training(args, train_data, val_data):
 
 
 def main(args):
-    
+    torch.set_num_threads(args.num_workers if args.num_workers is not None else 1)
     tokenizer = AutoTokenizer.from_pretrained(args.model_path, use_auth_token=True)
     train_dataset, eval_dataset = create_datasets(tokenizer, args)
     run_training(args, train_dataset, eval_dataset)
 
 
 if __name__ == "__main__":
-    dist.init_process_group(backend='nccl', init_method='env://', timeout=timedelta(minutes=60))
+
     args = get_args()
-    torch.set_num_threads(args.num_workers if args.num_workers is not None else 1)
+    
+    # List of hostnames or IP addresses of all machines
+    all_machines = ['machine1', 'machine2', 'machine3', 'machine4']
+    all_machines.sort()
+    
+    # Get the hostname or IP address of the current machine
+    current_machine = socket.gethostname()
+    
+    
+    # Assign rank based on the sorted order of hostnames or IP addresses
+    rank = all_machines.index(current_machine)
+    world_size = len(all_machines)
+
+    dist.init_process_group(backend='nccl', rank=rank, world_size=world_size, timeout=timedelta(minutes=60))
+
     set_seed(args.seed)
     os.makedirs(args.output_dir, exist_ok=True)
-
+    os.environ["TORCH_DISTRIBUTED_DEBUG"] = "DETAIL"
     transformers.logging.set_verbosity_debug()
 
     main(args)
