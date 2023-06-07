@@ -52,7 +52,8 @@ model = AutoModelForCausalLM.from_pretrained(checkpoint).to(device)
 
 inputs = tokenizer.encode("def print_hello_world():", return_tensors="pt").to(device)
 outputs = model.generate(inputs)
-print(tokenizer.decode(outputs[0]))
+# clean_up_tokenization_spaces=False prevents a tokenizer edge case which can result in spaces being removed around punctuation
+print(tokenizer.decode(outputs[0], clean_up_tokenization_spaces=False))
 ```
 or
 ```python
