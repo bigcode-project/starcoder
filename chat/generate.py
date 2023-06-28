@@ -127,7 +127,7 @@ def main():
         print()
 
     raw_model_name = args.model_id.split("/")[-1]
-    model_name = f"{raw_model_name}-{args.prompt_type}"
+    model_name = f"{raw_model_name}"
     if args.revision is not None:
         model_name += f"-{args.revision}"
 
