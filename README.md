@@ -159,7 +159,7 @@ python finetune/finetune.py \
 The size of the SE dataset is better manageable when using streaming. We also have to precise the split of the dataset that is used. For more details, check the [dataset's page](https://huggingface.co/datasets/ArmelR/stack-exchange-instruction) on 🤗. Similarly we can modify the command to account for the availability of GPUs
 
 ```bash
-python -m torch.distributed.launch \
+python -m torch.distributed.run \
   --nproc_per_node number_of_gpus finetune/finetune.py \
   --model_path="bigcode/starcoder"\
   --dataset_name="ArmelR/stack-exchange-instruction"\
