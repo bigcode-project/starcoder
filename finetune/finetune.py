@@ -267,6 +267,8 @@ def run_training(args, train_data, val_data):
         output_dir=args.output_dir,
         dataloader_drop_last=True,
         evaluation_strategy="steps",
+        save_strategy="steps",
+        load_best_model_at_end=True,
         max_steps=args.max_steps,
         eval_steps=args.eval_freq,
         save_steps=args.save_freq,
