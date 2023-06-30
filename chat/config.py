@@ -106,6 +106,9 @@ class DataArguments:
             "help": "The name of the dialogue template to use for conditioning the model. See h4.training.dialogues for choices."
         },
     )
+    dataset_config_name: Optional[str] = field(
+        default=None
+    )
 
 
 @dataclass
