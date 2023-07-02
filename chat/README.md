@@ -88,7 +88,7 @@ For training and inference, we use _dialogue templates_ to format each message i
 }
 ```
 
-Make sure you convert your dataset according to this schema, in particular you need to include a `messages` column like the above. You can adjust the model, dataset, and hyperparamters in the `config.yaml` file.
+Make sure you convert your dataset according to this schema, in particular you need to include a `messages` column like the above. You can adjust the model, dataset, and hyperparameters in the `config.yaml` file.
 
 ## Launch training
 
