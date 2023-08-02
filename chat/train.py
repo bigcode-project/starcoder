@@ -109,8 +109,8 @@ def main():
         f"Training on the following datasets and their proportions: {[split + ' : ' + str(dset.num_rows) for split, dset in raw_datasets.items()]}"
     )
     with training_args.main_process_first(desc="Log a few random samples from the raw training set"):
-        for index in random.sample(range(len(raw_datasets["train"])), 3):
-            logger.info(f"Sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['messages']}")
+        for index in random.sample(range(len(raw_datasets["train_idf"])), 3):
+            logger.info(f"Sample {index} of the raw training set:\n\n{raw_datasets['train_idf'][index]['messages']}")
 
     #########################
     # Apply dialogue template
@@ -133,14 +133,14 @@ def main():
     logger.info(f"Added {num_added_tokens} new tokens: {dialogue_tokens}")
 
     if training_args.do_train:
-        column_names = list(raw_datasets["train"].features)
+        column_names = list(raw_datasets["train_idf"].features)
     else:
-        column_names = list(raw_datasets["test"].features)
+        column_names = list(raw_datasets["test_idf"].features)
     text_column_name = "text" if "text" in column_names else column_names[0]
 
     with training_args.main_process_first(desc="Log a few random samples from the training set"):
-        for index in random.sample(range(len(raw_datasets["train"])), 3):
-            logger.info(f"Sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['text']}")
+        for index in random.sample(range(len(raw_datasets["train_idf"])), 3):
+            logger.info(f"Sample {index} of the raw training set:\n\n{raw_datasets['train_idf'][index]['text']}")
 
     # since this will be pickled to avoid _LazyModule error in Hasher force logger loading before tokenize_function
     tok_logger = transformers.utils.logging.get_logger("transformers.tokenization_utils_base")
@@ -218,17 +218,17 @@ def main():
         )
 
     if training_args.do_train:
-        if "train" not in tokenized_datasets:
+        if "train_idf" not in tokenized_datasets:
             raise ValueError("--do_train requires a train dataset")
-        train_dataset = lm_datasets["train"]
+        train_dataset = lm_datasets["train_idf"]
         if data_args.max_train_samples is not None:
             max_train_samples = min(len(train_dataset), data_args.max_train_samples)
             train_dataset = train_dataset.select(range(max_train_samples))
 
     if training_args.do_eval:
-        if "test" not in tokenized_datasets:
+        if "test_idf" not in tokenized_datasets:
             raise ValueError("--do_eval requires a validation dataset")
-        eval_dataset = lm_datasets["test"]
+        eval_dataset = lm_datasets["test_idf"]
         if data_args.max_eval_samples is not None:
             max_eval_samples = min(len(eval_dataset), data_args.max_eval_samples)
             eval_dataset = eval_dataset.select(range(max_eval_samples))
@@ -281,8 +281,8 @@ def main():
         )
         metrics["train_samples"] = min(max_train_samples, len(train_dataset))
 
-        trainer.log_metrics("train", metrics)
-        trainer.save_metrics("train", metrics)
+        trainer.log_metrics("train_idf", metrics)
+        trainer.save_metrics("train_idf", metrics)
         trainer.save_state()
 
     ##########
