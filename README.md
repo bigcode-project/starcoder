@@ -80,6 +80,14 @@ print( pipe("def hello():") )
 ```
 For hardware requirements, check the section [Inference hardware requirements](#inference-hardware-requirements).
 
+If your Python interpreter crashes when loading the model (`AutoModelForCausalLM.from_pretrained()`), it may be because your system does not have sufficient RAM; please consider using this:
+
+```python
+model = AutoModelForCausalLM.from_pretrained(checkpoint, torch_dtype=torch.float16,
+                                             device_map="auto", offload_folder="offload",
+                                             offload_state_dict=True)
+```
+
 ## Text-generation-inference
 
 ```bash
