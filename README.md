@@ -37,6 +37,18 @@ First, we have to install all the libraries listed in `requirements.txt`
 ```bash
 pip install -r requirements.txt
 ```
+
+If you see this error:
+
+> OSError: bigcode/starcoder is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'
+If this is a private repository, make sure to pass a token having permission to this repo with `use_auth_token` or log in with `huggingface-cli login` and pass `use_auth_token=True`.
+
+it means that you need to authenticate to Hugging Face API to download the model: sign up for an account, and accept the [T&C to use BigCode](https://huggingface.co/bigcode/starcoder); then [obtain an API Token](https://huggingface.co/settings/tokens) from HF and use it to authenticate to the CLI:
+
+```shell
+huggingface-cli login
+```
+
 ## Code generation
 The code generation pipeline is as follows
 
@@ -46,7 +58,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 checkpoint = "bigcode/starcoder"
 device = "cuda" # for GPU usage or "cpu" for CPU usage
 
-tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_auth_token=True)
 # to save memory consider using fp16 or bf16 by specifying torch_dtype=torch.float16 for example
 model = AutoModelForCausalLM.from_pretrained(checkpoint).to(device)
 
@@ -60,13 +72,21 @@ or
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 checkpoint = "bigcode/starcoder"
 
-model = AutoModelForCausalLM.from_pretrained(checkpoint)
-tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+model = AutoModelForCausalLM.from_pretrained(checkpoint, use_auth_token=True)
+tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_auth_token=True)
 
 pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, device=0)
 print( pipe("def hello():") )
 ```
 For hardware requirements, check the section [Inference hardware requirements](#inference-hardware-requirements).
+
+If your Python interpreter crashes when loading the model (`AutoModelForCausalLM.from_pretrained()`), it may be because your system does not have sufficient RAM; please consider using this:
+
+```python
+model = AutoModelForCausalLM.from_pretrained(checkpoint, torch_dtype=torch.float16,
+                                             device_map="auto", offload_folder="offload",
+                                             offload_state_dict=True)
+```
 
 ## Text-generation-inference
 
