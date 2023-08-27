@@ -201,7 +201,8 @@ def main():
             for k, t in concatenated_examples.items()
         }
         labels = result["input_ids"].copy()
-        mask_user_labels(tokenizer, dialogue_template, labels)
+        for label in labels:
+            mask_user_labels(tokenizer, dialogue_template, label)
         result["labels"] = labels
         return result
 
