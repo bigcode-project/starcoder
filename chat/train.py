@@ -104,13 +104,13 @@ def main():
     ###############
     # Load datasets
     ###############
-    raw_datasets = load_dataset(data_args.dataset_name)
+    raw_datasets = load_dataset(data_args.dataset_name, cache_dir="/data-starcoder/cache")
     logger.info(
         f"Training on the following datasets and their proportions: {[split + ' : ' + str(dset.num_rows) for split, dset in raw_datasets.items()]}"
     )
     with training_args.main_process_first(desc="Log a few random samples from the raw training set"):
-        for index in random.sample(range(len(raw_datasets["train"])), 3):
-            logger.info(f"Sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['messages']}")
+        for index in random.sample(range(len(raw_datasets["train_ift"])), 3):
+            logger.info(f"Sample {index} of the raw training set:\n\n{raw_datasets['train_ift'][index]['messages']}")
 
     #########################
     # Apply dialogue template
@@ -125,6 +125,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         revision=model_args.model_revision,
+        cache_dir="/data-starcoder/cache"
     )
 
     # Note that we must call `add_tokens` before adding any special tokens
@@ -133,14 +134,14 @@ def main():
     logger.info(f"Added {num_added_tokens} new tokens: {dialogue_tokens}")
 
     if training_args.do_train:
-        column_names = list(raw_datasets["train"].features)
+        column_names = list(raw_datasets["train_ift"].features)
     else:
-        column_names = list(raw_datasets["test"].features)
+        column_names = list(raw_datasets["test_ift"].features)
     text_column_name = "text" if "text" in column_names else column_names[0]
 
     with training_args.main_process_first(desc="Log a few random samples from the training set"):
-        for index in random.sample(range(len(raw_datasets["train"])), 3):
-            logger.info(f"Sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['text']}")
+        for index in random.sample(range(len(raw_datasets["train_ift"])), 3):
+            logger.info(f"Sample {index} of the raw training set:\n\n{raw_datasets['train_ift'][index]['text']}")
 
     # since this will be pickled to avoid _LazyModule error in Hasher force logger loading before tokenize_function
     tok_logger = transformers.utils.logging.get_logger("transformers.tokenization_utils_base")
@@ -218,17 +219,17 @@ def main():
         )
 
     if training_args.do_train:
-        if "train" not in tokenized_datasets:
+        if "train_ift" not in tokenized_datasets:
             raise ValueError("--do_train requires a train dataset")
-        train_dataset = lm_datasets["train"]
+        train_dataset = lm_datasets["train_ift"]
         if data_args.max_train_samples is not None:
             max_train_samples = min(len(train_dataset), data_args.max_train_samples)
             train_dataset = train_dataset.select(range(max_train_samples))
 
     if training_args.do_eval:
-        if "test" not in tokenized_datasets:
+        if "test_ift" not in tokenized_datasets:
             raise ValueError("--do_eval requires a validation dataset")
-        eval_dataset = lm_datasets["test"]
+        eval_dataset = lm_datasets["test_ift"]
         if data_args.max_eval_samples is not None:
             max_eval_samples = min(len(eval_dataset), data_args.max_eval_samples)
             eval_dataset = eval_dataset.select(range(max_eval_samples))
@@ -245,6 +246,7 @@ def main():
         revision=model_args.model_revision,
         torch_dtype=torch_dtype,
         use_cache=False if training_args.gradient_checkpointing else True,
+        cache_dir="/data-starcoder/cache"
     )
     model.resize_token_embeddings(len(tokenizer))
 
@@ -281,8 +283,8 @@ def main():
         )
         metrics["train_samples"] = min(max_train_samples, len(train_dataset))
 
-        trainer.log_metrics("train", metrics)
-        trainer.save_metrics("train", metrics)
+        trainer.log_metrics("train_ift", metrics)
+        trainer.save_metrics("train_ift", metrics)
         trainer.save_state()
 
     ##########
