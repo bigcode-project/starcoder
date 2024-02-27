@@ -196,7 +196,7 @@ def create_datasets(tokenizer, args):
         args.dataset_name,
         data_dir=args.subset,
         split=args.split,
-        use_auth_token=True,
+        token=True,
         num_proc=args.num_workers if not args.streaming else None,
         streaming=args.streaming,
     )
@@ -239,7 +239,7 @@ def run_training(args, train_data, val_data):
     # disable caching mechanism when using gradient checkpointing
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        use_auth_token=True,
+        token=True,
         use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,
         device_map={"": Accelerator().process_index},
@@ -298,7 +298,7 @@ def run_training(args, train_data, val_data):
 
 
 def main(args):
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path, use_auth_token=True)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path, token=True)
     train_dataset, eval_dataset = create_datasets(tokenizer, args)
     run_training(args, train_dataset, eval_dataset)
 
