@@ -1,0 +1,86 @@
+[tool.poetry]
+name = "starcoder"
+version = "0.1.0"
+description = "StarCoder language model for code generation and fine-tuning"
+authors = ["BigCode <noreply@huggingface.co>"]
+readme = "README.md"
+packages = [{include = "chat"}, {include = "finetune"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+tqdm = "4.65.0"
+transformers = "4.28.1"
+datasets = "2.11.0"
+huggingface-hub = "0.13.4"
+accelerate = "0.18.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
+
+[tool.poetry.scripts]
+test = "pytest:main"
+tests = "pytest:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=chat",
+    "--cov=finetune",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-report=term-missing",
+    # Uncomment to enforce coverage threshold once actual tests are written:
+    # "--cov-fail-under=80",
+]
+markers = [
+    "unit: Unit tests that test individual components in isolation",
+    "integration: Integration tests that test multiple components together",
+    "slow: Tests that take a long time to run",
+]
+
+[tool.coverage.run]
+source = ["chat", "finetune"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/*_test.py",
+    "*/conftest.py",
+    "*/__pycache__/*",
+    "*/.venv/*",
+    "*/venv/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if 0:",
+    "if False:",
+    "@abstractmethod",
+    "@abc.abstractmethod",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
